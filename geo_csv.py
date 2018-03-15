@@ -4,12 +4,13 @@ import pandas as pd
 
 
 # 读取数据
-filename = 'train.csv'
+filename = 'test.csv'
+df = pd.read_csv(filename)
+'''
 f = open(filename, 'r+', newline='')
 reader = csv.reader(f)
 writer = csv.writer(f)
 header_row = next(reader)
-
 geohash_start_loc = []
 geohash_end_loc = []
 for row in reader:
@@ -17,7 +18,13 @@ for row in reader:
     geohash_start_loc.append(row[5])
     geohash_end_loc.append(row[6])
 print("Loading complete.")
-
+'''
+geohash_start_loc = []
+geohash_end_loc = []
+for i in range(len(df.index)):
+    geohash_start_loc.append(df.get_value(i, 5))
+    geohash_end_loc.append(df.get_value(i, 6))
+print("Loading complete.")
 
 # 坐标转换
 coord_start_loc = []
@@ -30,7 +37,6 @@ for i in range(len(geohash_start_loc)):
 print("Conversion complete.")
 
 # 坐标覆盖写入
-df = pd.read_csv(filename)
 for i in range(len(coord_start_loc)):
     df.set_value(i, col='geohashed_start_loc', value=str(coord_start_loc[i]))
     df.set_value(i, col='geohashed_end_loc', value=str(coord_end_loc[i]))
