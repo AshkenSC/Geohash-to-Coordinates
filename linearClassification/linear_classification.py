@@ -25,4 +25,6 @@ from sklearn.cross_validation import train_test_split
 # use 25% of data to test, the rest is for training set
 X_train, X_test, y_train, y_test = train_test_split(data[column_names[1:10]], data[column_names[10]],
                                                     test_size=0.25, random_state=33)
+# check distribution of samples
+y_train.value_counts()
 
