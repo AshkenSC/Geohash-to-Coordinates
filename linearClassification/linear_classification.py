@@ -18,3 +18,11 @@ data = data.replace(to_replace='? ', value=np.nan)
 data = data.dropna(how='any')
 # output the amount and dimension of 'data'
 data.shape
+
+# get ready for the training and testing data
+# use train_test_split module in sklearn.cross_validation to divide data
+from sklearn.cross_validation import train_test_split
+# use 25% of data to test, the rest is for training set
+X_train, X_test, y_train, y_test = train_test_split(data[column_names[1:10]], data[column_names[10]],
+                                                    test_size=0.25, random_state=33)
+
