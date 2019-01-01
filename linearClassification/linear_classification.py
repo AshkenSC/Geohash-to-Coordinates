@@ -39,3 +39,8 @@ from sklearn.preprocessing import StandardScaler
 # load Logistic Regression and SGD classifier from sklearn.linear_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+
+# standardize data to ensure each charateristic is DX = 1, EX = 0.
+ss = StandardScaler()
+X_train = ss.fit_transform(X_train)
+X_test = ss.transform(X_test)
