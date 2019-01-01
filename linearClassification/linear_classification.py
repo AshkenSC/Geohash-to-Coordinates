@@ -25,7 +25,17 @@ from sklearn.cross_validation import train_test_split
 # use 25% of data to test, the rest is for training set
 X_train, X_test, y_train, y_test = train_test_split(data[column_names[1:10]], data[column_names[10]],
                                                     test_size=0.25, random_state=33)
+# sample check
+'''
 # check distribution of training samples
 y_train.value_counts()
 # check distribution of testing samples
 y_test.value_counts()
+'''
+
+# use linear classification model to predict
+# load StandardScaler from sklearn.preprocessing
+from sklearn.preprocessing import StandardScaler
+# load Logistic Regression and SGD classifier from sklearn.linear_model
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
