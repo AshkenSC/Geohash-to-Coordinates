@@ -44,3 +44,7 @@ from sklearn.linear_model import SGDClassifier
 ss = StandardScaler()
 X_train = ss.fit_transform(X_train)
 X_test = ss.transform(X_test)
+
+# initialize Logistic Regression and SGDClassifier
+lr = LogisticRegression()
+sgdc = SGDClassifier()
