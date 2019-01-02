@@ -55,3 +55,11 @@ lr.fit(X_train, y_train)
 # the result is stored in lr_y_predict
 lr_y_predict = lr.predict(X_test)
 
+from sklearn.metrics import classification_report
+# use 'score' in the Logistic Regression model to get accuracy result
+# of the model on the test set
+print ('Accuracy of LR Classifier:', lr.score(X_test, y_test))
+# use classification_report model to get the other 3 results
+print(classification_report(y_test, lr_y_predict, target_names=['Benign', 'Malignant']))
+
+
