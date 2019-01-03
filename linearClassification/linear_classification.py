@@ -13,7 +13,7 @@ data = pd.read_csv(
 
 
 # replace '?' with standard missing value
-data = data.replace(to_replace='? ', value=np.nan)
+data = data.replace(to_replace='?', value=np.nan)
 # abandon data with missing value (as long as there is one dimension missing)
 data = data.dropna(how='any')
 # output the amount and dimension of 'data'
@@ -34,13 +34,13 @@ y_test.value_counts()
 '''
 
 # use linear classification model to predict
-# load StandardScaler from sklearn.preprocessing
+# load StandardScaler from sklearn.pre-processing
 from sklearn.preprocessing import StandardScaler
 # load Logistic Regression and SGD classifier from sklearn.linear_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
 
-# standardize data to ensure each charateristic is DX = 1, EX = 0.
+# standardize data to ensure each characteristic is DX = 1, EX = 0.
 ss = StandardScaler()
 X_train = ss.fit_transform(X_train)
 X_test = ss.transform(X_test)
@@ -48,3 +48,10 @@ X_test = ss.transform(X_test)
 # initialize Logistic Regression and SGDClassifier
 lr = LogisticRegression()
 sgdc = SGDClassifier()
+
+# call fit function in LogisticRegression to train model parameter
+lr.fit(X_train, y_train)
+# use trained model lr to predict X_test
+# the result is stored in lr_y_predict
+lr_y_predict = lr.predict(X_test)
+
