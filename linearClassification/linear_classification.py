@@ -76,3 +76,4 @@ print('Accuracy of SGD Classifier:', sgdc.score(X_test, y_test))
 # 利用classification_report模块活的SGDClassifier其他三个指标的结果
 print(classification_report(y_test, sgdc_y_predict, target_names=['Benign', 'Malignant']))
 
+
