@@ -10,3 +10,7 @@ from sklearn.cross_validation import train_test_split
 # randomly select 75% of the dataset as training set, the rest as test set
 X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target,
                                                     test_size=0.25, random_state=33)
+
+# inspect training and test set respectively
+y_train.shape()
+y_test.shape()
