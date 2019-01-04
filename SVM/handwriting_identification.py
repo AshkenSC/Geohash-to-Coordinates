@@ -31,3 +31,9 @@ lsvc = LinearSVC()
 lsvc.fit(X_train, y_train)
 # predict using trained model
 y_predict = lsvc.predict(X_test)
+
+# assess accuracy using integrated assessment function
+print('The accuracy of linear SVC is', lsvc.score(X_test, y_test))
+# use classification_report model to analyze prediction result
+from sklearn.metrics import classification_report
+print(classification_report(y_test, y_predict, target_names=digits.target_names.astype(str)))
