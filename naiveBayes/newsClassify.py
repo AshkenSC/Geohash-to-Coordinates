@@ -11,3 +11,8 @@ from sklearn.cross_validation import train_test_split
 # get test set
 X_train, X_test, y_train, y_test = train_test_split(news.data, news.target,
                                                     test_size=0.25, random_state=33)
+# vectorize text
+from sklearn.feature_extraction.text import CountVectorizer
+vec = CountVectorizer()
+X_train = vec.fit_transform(X_train)
+X_test = vec.transform(X_test)
