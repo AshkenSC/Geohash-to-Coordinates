@@ -17,7 +17,11 @@ vec = CountVectorizer()
 X_train = vec.fit_transform(X_train)
 X_test = vec.transform(X_test)
 
-# load Bayes module from sklearn
+# load Bayes model from sklearn
 from sklearn.naive_bayes import MultinomialNB
 # load default settings
 mnb = MultinomialNB()
+# estimate parameter using trained data
+mnb.fit(X_train, y_train)
+# make prediction on test set
+y_predict = mnb.predict(X_test)
