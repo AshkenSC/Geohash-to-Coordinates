@@ -25,3 +25,8 @@ mnb = MultinomialNB()
 mnb.fit(X_train, y_train)
 # make prediction on test set
 y_predict = mnb.predict(X_test)
+
+# assess performance of naive bayes on news texts
+from sklearn.metrics import classification_report
+print('The accuracy of Naive Bayes Classifier is', mnb.score(X_test, y_test))
+print(classification_report(y_test, y_predict, target_names=news.target_names))
