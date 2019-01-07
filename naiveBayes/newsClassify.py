@@ -16,3 +16,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 vec = CountVectorizer()
 X_train = vec.fit_transform(X_train)
 X_test = vec.transform(X_test)
+
+# load Bayes module from sklearn
+from sklearn.naive_bayes import MultinomialNB
+# load default settings
+mnb = MultinomialNB()
