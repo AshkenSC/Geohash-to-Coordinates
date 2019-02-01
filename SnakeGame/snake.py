@@ -1,5 +1,8 @@
 import pygame
 
+class Snake(object):
+    pass
+
 def redrawWindow(surface):
     global rows, width
     surface.fill((0, 0, 0))
