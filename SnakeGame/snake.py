@@ -15,4 +15,6 @@ def main():
         redrawWindow(win)
 
 def redrawWindow(win):
-    pass
+    win.fill((0, 0, 0))
+    drawGrid(surface)
+    pygame.display.update()
