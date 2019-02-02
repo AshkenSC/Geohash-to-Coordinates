@@ -18,7 +18,7 @@ def drawGrid(width, rows, surface):
     for l in range(rows):
         x += sizeBetween
         y += sizeBetween
-        # 绘制一条纵向线和横向线
+        # 绘制一条纵向线和一条横向线
         pygame.draw.line(surface, (255, 255, 255), (x, 0), (x, width))
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
 
