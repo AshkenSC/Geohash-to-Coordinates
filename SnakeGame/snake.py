@@ -8,6 +8,8 @@ class Snake(object):
        self.color = color
        self.head = cube(pos)
        self.body.append(self.head)
+       self.dirnx = 0
+       self.dirny = 1
 
 def redrawWindow(surface):
     global rows, width
