@@ -11,6 +11,13 @@ class Snake(object):
        self.dirnx = 0
        self.dirny = 1
 
+   def move(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+            keys = pygame.key.get_pressed()
+
 def redrawWindow(surface):
     global rows, width
     surface.fill((0, 0, 0))
