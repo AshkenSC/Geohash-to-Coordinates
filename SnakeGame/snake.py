@@ -18,6 +18,17 @@ class Snake(object):
 
             keys = pygame.key.get_pressed()
 
+            for key in keys:
+                if keys[pygame.K_LEFT]:
+                    pass
+                if keys[pygame.K_RIGHT]:
+                    pass
+                if keys[pygame.K_UP]:
+                    pass
+                if keys[pygame.K_DOWN]:
+                    pass
+
+
 def redrawWindow(surface):
     global rows, width
     surface.fill((0, 0, 0))
@@ -33,7 +44,7 @@ def drawGrid(width, rows, surface):
     for l in range(rows):
         x += sizeBetween
         y += sizeBetween
-        # 每个循环绘制一条纵向线和一条横向线
+        # 每次循环绘制一条纵向线和一条横向线
         pygame.draw.line(surface, (255, 255, 255), (x, 0), (x, width))
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
 
