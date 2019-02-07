@@ -20,7 +20,7 @@ class Snake(object):
 
             for key in keys:
                 if keys[pygame.K_LEFT]:
-                    pass
+                    self.dirnx = -1
                 if keys[pygame.K_RIGHT]:
                     pass
                 if keys[pygame.K_UP]:
