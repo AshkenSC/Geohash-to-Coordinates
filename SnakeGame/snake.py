@@ -21,6 +21,8 @@ class Snake(object):
             for key in keys:
                 if keys[pygame.K_LEFT]:
                     self.dirnx = -1
+                    self.dirny = 0
+                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
                 if keys[pygame.K_RIGHT]:
                     pass
                 if keys[pygame.K_UP]:
