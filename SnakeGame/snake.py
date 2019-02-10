@@ -32,7 +32,9 @@ class Snake(object):
                     self.dirny = -1
                     self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
                 if keys[pygame.K_DOWN]:
-                    pass
+                    self.dirnx = 0
+                    self.dirny = 1
+                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
 
 
 def redrawWindow(surface):
