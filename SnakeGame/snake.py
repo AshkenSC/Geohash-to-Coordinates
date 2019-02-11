@@ -52,6 +52,8 @@ class Snake(object):
                     cube.pos = (cube.pos[0], 0)
                 elif cube.dirny == -1 and cube.pos[1] <= 0:
                     cube.pos = (cube.pos[0], cube.rows - 1)
+                else:
+                    c.move(c.dirnx, c.dirny)
 
 
 def redrawWindow(surface):
