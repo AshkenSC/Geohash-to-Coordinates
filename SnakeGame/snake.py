@@ -36,6 +36,14 @@ class Snake(object):
                     self.dirny = 1
                     self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
 
+        for index, cube in enumerate(self.body):
+            pos = cube.pos[:]
+            if pos in self.turns:
+                turn = self.turns[p]
+                cube.move(turn[0], turn[1])
+                if i == len(self.body) - 1:
+                    self.turns.pop(pos)
+
 
 def redrawWindow(surface):
     global rows, width
