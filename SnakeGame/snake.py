@@ -1,17 +1,17 @@
 import pygame
 
 class Snake(object):
-   body = []
-   turns = {}
+    body = []
+    turns = {}
 
-   def __init__(self, color, pos):
+    def __init__(self, color, pos):
        self.color = color
        self.head = cube(pos)
        self.body.append(self.head)
        self.dirnx = 0
        self.dirny = 1
 
-   def move(self):
+    def move(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -55,10 +55,19 @@ class Snake(object):
                 else:
                     c.move(c.dirnx, c.dirny)
 
+    def draw(self, surface):
+        for i, c in enumerate(self.body):
+            if i == 0:
+                # draw snake's eye
+                c.draw(surface, True)
+            else:
+                c.draw(surface)
+
 
 def redrawWindow(surface):
     global rows, width
     surface.fill((0, 0, 0))
+    s.draw(surface)
     drawGrid(width, rows, surface)
     pygame.display.update()
 
@@ -76,7 +85,7 @@ def drawGrid(width, rows, surface):
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
 
 def main():
-    global width, rows
+    global width, rows, s
     width = 500
     rows = 20
     win = pygame.display.set_mode((width, width))
