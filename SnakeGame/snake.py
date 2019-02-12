@@ -32,22 +32,6 @@ class Cube(object):
             pygame.draw.circle(surface, (0, 0, 0), circleMiddle, radius)
             pygame.draw.circle(surface, (0, 0, 0), circleMiddle2, radius)
 
-    def addCube(self):
-        tail = self.body[-1]
-        dx, dy = tail.dirnx, tail.dirny
-
-        if dx == 1 and dy == 0:
-            self.body.append(cube((tail.pos[0] - 1, tail.pos[1])))
-        elif dx == -1 and dy == 0:
-            self.body.append(cube((tail.pos[0] + 1, tail.pos[1])))
-        elif dx == 0 and dy == 1:
-            self.body.append(cube((tail.pos[0], tail.pos[1] - 1)))
-        elif dx == 0 and dy == -1:
-            self.body.append(cube((tail.pos[0], tail.pos[1] + 1)))
-
-        self.body[-1].dirnx = dx
-        self.body[-1].dirny = dy
-
 class Snake(object):
     body = []
     turns = {}
@@ -111,6 +95,22 @@ class Snake(object):
             else:
                 c.draw(surface)
 
+    def addCube(self):
+        tail = self.body[-1]
+        dx, dy = tail.dirnx, tail.dirny
+
+        if dx == 1 and dy == 0:
+            self.body.append(cube((tail.pos[0] - 1, tail.pos[1])))
+        elif dx == -1 and dy == 0:
+            self.body.append(cube((tail.pos[0] + 1, tail.pos[1])))
+        elif dx == 0 and dy == 1:
+            self.body.append(cube((tail.pos[0], tail.pos[1] - 1)))
+        elif dx == 0 and dy == -1:
+            self.body.append(cube((tail.pos[0], tail.pos[1] + 1)))
+
+        self.body[-1].dirnx = dx
+        self.body[-1].dirny = dy
+
 def redrawWindow(surface):
     global rows, width, s, snack
     surface.fill((0, 0, 0))
@@ -162,6 +162,12 @@ def main():
         pygame.time.delay(50)
         clock.tick(10)
         s.move()
+
+        # snake and snack collision detection
+        if s.body[0].pos == snack.pos:
+            s.addCube()
+            snack = Cube(randomSnack(rows, s), color=(255, 255, 255))
+
         redrawWindow(win)
 
 main()
