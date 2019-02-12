@@ -1,8 +1,8 @@
 import pygame
 
 class Cube(object):
-    rows = 0
-    w = 0
+    width = 500
+    rows = 20
 
     def __init__(self, start, dirnx=1, dirny=0, color=(255, 0, 0)):
         self.pos = start
@@ -11,10 +11,25 @@ class Cube(object):
         self.color = color
 
     def move(self, dirnx, dirny):
-        pass
+        self.dirnx = dirnx
+        self.dirny = dirny
+        self.pos(self.pos[0]+self.dirnx, self.pos[1]+self.dirny)
 
     def draw(self, surface, eyes=False):
-        pass
+        dis = self.width // self.rows
+        i = self.pos[0]
+        j = self.pos[1]
+
+        # +1 and -2 is to ensure the grid in the background will not be covered by cubes
+        pygame.draw.rect(surface, self.color, (i*dis+1, j*dis+1, dis-2, dis-2))
+
+        if eyes:
+            center = dis // 2
+            radius = 3
+            circleMiddle = (i*dis+center-radius, j*dis+8)
+            circleMiddle2 = (i*dis+dis-radius*2, j*dis+8)
+            pygame.draw.circle(surface, (0, 0, 0), circleMiddle, radius)
+            pygame.draw.circle(surface, (0, 0, 0), circleMiddle2, radius)
 
 class Snake(object):
     body = []
@@ -22,7 +37,7 @@ class Snake(object):
 
     def __init__(self, color, pos):
        self.color = color
-       self.head = cube(pos)
+       self.head = Cube(pos)
        self.body.append(self.head)
        self.dirnx = 0
        self.dirny = 1
@@ -105,6 +120,7 @@ def main():
     width = 500
     rows = 20
     win = pygame.display.set_mode((width, width))
+    s = Snake((255, 0, 0), (10, 10))
     flag = True
 
     clock = pygame.time.Clock()
