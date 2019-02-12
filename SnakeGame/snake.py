@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class Cube(object):
     width = 500
@@ -67,24 +68,24 @@ class Snake(object):
                     self.dirny = 1
                     self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
 
-        for i, cube in enumerate(self.body):
-            pos = cube.pos[:]
+        for i, c in enumerate(self.body):
+            pos = c.pos[:]
             if pos in self.turns:
                 turn = self.turns[pos]
-                cube.move(turn[0], turn[1])
+                c.move(turn[0], turn[1])
                 if i == len(self.body) - 1:
                     self.turns.pop(pos)
             else:
-                if cube.dirnx == -1 and cube.pos[0] <= 0:
-                    cube.pos = (cube.rows - 1, cube.pos[1])
-                elif cube.dirnx == 1 and cube.pos[0] >= cube.rows - 1:
-                    cube.pos = (0, cube.pos[1])
-                elif cube.dirny == 1 and cube.pos[1] >= cube.rows - 1:
-                    cube.pos = (cube.pos[0], 0)
-                elif cube.dirny == -1 and cube.pos[1] <= 0:
-                    cube.pos = (cube.pos[0], cube.rows - 1)
+                if c.dirnx == -1 and c.pos[0] <= 0:
+                    c.pos = (c.rows - 1, c.pos[1])
+                elif c.dirnx == 1 and c.pos[0] >= c.rows - 1:
+                    c.pos = (0, c.pos[1])
+                elif c.dirny == 1 and c.pos[1] >= c.rows - 1:
+                    c.pos = (c.pos[0], 0)
+                elif c.dirny == -1 and c.pos[1] <= 0:
+                    c.pos = (c.pos[0], c.rows - 1)
                 else:
-                    cube.move(cube.dirnx, cube.dirny)
+                    c.move(c.dirnx, c.dirny)
 
     def draw(self, surface):
         for i, c in enumerate(self.body):
@@ -93,7 +94,6 @@ class Snake(object):
                 c.draw(surface, True)
             else:
                 c.draw(surface)
-
 
 def redrawWindow(surface):
     global rows, width
@@ -114,6 +114,16 @@ def drawGrid(width, rows, surface):
         # 每次循环绘制一条纵向线和一条横向线
         pygame.draw.line(surface, (255, 255, 255), (x, 0), (x, width))
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
+
+def randomSnack(rows, item):
+    global rows
+    positions = item.body
+
+    while True:
+        x = random.randrange(rows)
+        y = random.randrange(rows)
+        if len(list(filter(lambda  z:z.pos == (x, y), positions))) > 0:
+            pass
 
 def main():
     global width, rows, s
