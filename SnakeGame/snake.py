@@ -116,14 +116,18 @@ def drawGrid(width, rows, surface):
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
 
 def randomSnack(rows, item):
-    global rows
+    #TODO global rows
     positions = item.body
 
     while True:
         x = random.randrange(rows)
         y = random.randrange(rows)
         if len(list(filter(lambda  z:z.pos == (x, y), positions))) > 0:
-            pass
+            continue
+        else:
+            break
+
+    return (x, y)
 
 def main():
     global width, rows, s
