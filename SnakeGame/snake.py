@@ -13,7 +13,7 @@ class Cube(object):
     def move(self, dirnx, dirny):
         self.dirnx = dirnx
         self.dirny = dirny
-        self.pos(self.pos[0]+self.dirnx, self.pos[1]+self.dirny)
+        self.pos = (self.pos[0]+self.dirnx, self.pos[1]+self.dirny)
 
     def draw(self, surface, eyes=False):
         dis = self.width // self.rows
@@ -53,24 +53,24 @@ class Snake(object):
                 if keys[pygame.K_LEFT]:
                     self.dirnx = -1
                     self.dirny = 0
-                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
+                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
                 elif keys[pygame.K_RIGHT]:
                     self.dirnx = 1
                     self.dirny = 0
-                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
+                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
                 elif keys[pygame.K_UP]:
                     self.dirnx = 0
                     self.dirny = -1
-                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
+                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
                 elif keys[pygame.K_DOWN]:
                     self.dirnx = 0
                     self.dirny = 1
-                    self.turns[self.headpos[:]] = [self.dirnx, self.dirny]
+                    self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
 
-        for index, cube in enumerate(self.body):
+        for i, cube in enumerate(self.body):
             pos = cube.pos[:]
             if pos in self.turns:
-                turn = self.turns[p]
+                turn = self.turns[pos]
                 cube.move(turn[0], turn[1])
                 if i == len(self.body) - 1:
                     self.turns.pop(pos)
@@ -84,7 +84,7 @@ class Snake(object):
                 elif cube.dirny == -1 and cube.pos[1] <= 0:
                     cube.pos = (cube.pos[0], cube.rows - 1)
                 else:
-                    c.move(c.dirnx, c.dirny)
+                    cube.move(cube.dirnx, cube.dirny)
 
     def draw(self, surface):
         for i, c in enumerate(self.body):
@@ -129,6 +129,7 @@ def main():
     while flag:
         pygame.time.delay(50)
         clock.tick(10)
+        s.move()
         redrawWindow(win)
 
 main()
