@@ -32,6 +32,22 @@ class Cube(object):
             pygame.draw.circle(surface, (0, 0, 0), circleMiddle, radius)
             pygame.draw.circle(surface, (0, 0, 0), circleMiddle2, radius)
 
+    def addCube(self):
+        tail = self.body[-1]
+        dx, dy = tail.dirnx, tail.dirny
+
+        if dx == 1 and dy == 0:
+            self.body.append(cube((tail.pos[0] - 1, tail.pos[1])))
+        elif dx == -1 and dy == 0:
+            self.body.append(cube((tail.pos[0] + 1, tail.pos[1])))
+        elif dx == 0 and dy == 1:
+            self.body.append(cube((tail.pos[0], tail.pos[1] - 1)))
+        elif dx == 0 and dy == -1:
+            self.body.append(cube((tail.pos[0], tail.pos[1] + 1)))
+
+        self.body[-1].dirnx = dx
+        self.body[-1].dirny = dy
+
 class Snake(object):
     body = []
     turns = {}
@@ -96,9 +112,10 @@ class Snake(object):
                 c.draw(surface)
 
 def redrawWindow(surface):
-    global rows, width
+    global rows, width, s, snack
     surface.fill((0, 0, 0))
     s.draw(surface)
+    snack.draw(surface)
     drawGrid(width, rows, surface)
     pygame.display.update()
 
@@ -115,9 +132,9 @@ def drawGrid(width, rows, surface):
         pygame.draw.line(surface, (255, 255, 255), (x, 0), (x, width))
         pygame.draw.line(surface, (255, 255, 255), (0, y), (width, y))
 
-def randomSnack(rows, item):
+def randomSnack(rows, snake):
     #TODO global rows
-    positions = item.body
+    positions = snake.body
 
     while True:
         x = random.randrange(rows)
@@ -130,11 +147,12 @@ def randomSnack(rows, item):
     return (x, y)
 
 def main():
-    global width, rows, s
+    global width, rows, s, snack
     width = 500
     rows = 20
     win = pygame.display.set_mode((width, width))
     s = Snake((255, 0, 0), (10, 10))
+    snack = Cube(randomSnack(rows, s), color=(255, 255, 255))
     flag = True
 
     clock = pygame.time.Clock()
