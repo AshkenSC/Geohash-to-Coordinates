@@ -168,6 +168,13 @@ def main():
             s.addCube()
             snack = Cube(randomSnack(rows, s), color=(255, 255, 255))
 
+        for x in range(len(s.body)):
+            if s.body[x].pos in list(map(lambda z:z.pos, s.body[x+1:])):
+                print('Score: ', len(s.body))
+                message_box()
+                s.reset((10, 10))
+                break
+
         redrawWindow(win)
 
 main()
