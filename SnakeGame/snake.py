@@ -1,5 +1,7 @@
 import pygame
 import random
+import tkinter as tk
+from tkinter import messagebox
 
 class Cube(object):
     width = 500
@@ -153,6 +155,16 @@ def randomSnack(rows, snake):
 
     return (x, y)
 
+def messageBox(subject, content):
+    root = tk.Tk()
+    root.attributes('-topmost', True)
+    root.withdraw()
+    messagebox.showinfo(subject, content)
+    try:
+        root.destroy()
+    except:
+        pass
+
 def main():
     global width, rows, s, snack
     width = 500
@@ -178,7 +190,7 @@ def main():
         for x in range(len(s.body)):
             if s.body[x].pos in list(map(lambda z:z.pos, s.body[x+1:])):
                 print('Score: ', len(s.body))
-                message_box()
+                messageBox('Game over', 'Play again')
                 s.reset((10, 10))
                 break
 
