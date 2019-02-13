@@ -111,6 +111,13 @@ class Snake(object):
         self.body[-1].dirnx = dx
         self.body[-1].dirny = dy
 
+    def reset(self, pos):
+        self.head = Cube(pos)
+        self.body = []
+        self.body.append(self.head)
+        self.dirnx = 0
+        self.dirny = 1
+
 def redrawWindow(surface):
     global rows, width, s, snack
     surface.fill((0, 0, 0))
