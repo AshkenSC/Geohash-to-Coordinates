@@ -1,8 +1,13 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-# 每隔200毫秒等时距取样
-t = np.arange(0., 5., 0.2)
+data = {'a': np.arange(50),
+        'c': np.random.randint(0, 50, 50),
+        'd': np.random.randn(50)}
+data['b'] = data['a'] + 10 * np.random.randn(50)
+data['d'] = np.abs(data['d']) * 100
 
-# 红色虚线，蓝色方块，绿色三角
-plt.plot(t, t, 'r--', t, t**2, 'bs', t, t**3, 'g^')
+plt.scatter('a', 'b', c='c', s='d', data=data)
+plt.xlabel('entry a')
+plt.ylabel('entry b')
 plt.show()
