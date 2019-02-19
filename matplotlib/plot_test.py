@@ -1,16 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-names = ['group_a', 'group_b', 'group_c']
-values = [1, 10, 100]
+squares = [1, 4, 6, 9, 16, 25]
+plt.plot(squares, linewidth = 5)
 
-plt.figure(1, figsize=(9, 3))
+# set caption and label axes
+plt.title("Square numbers", fontsize=24)
+plt.xlabel("Value", fontsize=14)
+plt.ylabel("Square of Value", fontsize=14)
 
-plt.subplot(131)
-plt.bar(names, values)
-plt.subplot(132)
-plt.scatter(names, values)
-plt.subplot(133)
-plt.plot(names, values)
-plt.suptitle('Categorical Plotting')
+# set tick size
+plt.tick_params(axis='both', labelsize=14)
+
 plt.show()
