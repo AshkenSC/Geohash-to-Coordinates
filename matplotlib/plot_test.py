@@ -8,4 +8,7 @@ plt.title("Square Number", fontsize=24)
 plt.xlabel("Value", fontsize=14)
 plt.ylabel("Square of Value", fontsize=14)
 
+# Set calibre size
+plt.tick_params(axis='both', which='major', labelsize=14)
+
 plt.show()
