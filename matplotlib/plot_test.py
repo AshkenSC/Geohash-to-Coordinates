@@ -11,7 +11,7 @@ plt.bar(names, values)
 plt.subplot(1,3,1)
 plt.scatter(names, values)
 plt.subplot(1,3,3)
-plt.plot(names, values)
+plt.plot(names, values, marker=',', visible=False)
 plt.suptitle('Subplots')
 plt.show()
 
