@@ -1,32 +1,20 @@
 import matplotlib.pyplot as plt
 
-jan_sales = [3010, 4029, 5021, 3056]
-# 构建数据
-sales = [7125, 12753, 13143, 8635]
+labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+list1 = [3.2, 1.6, 6.8, 2.6, 4]
+list2 = [2.3, 1.2, 3.3, 5.5, 3]
 
-# 中文乱码的处理
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
+x = list(range(len(list1)))
+total_width, n = 0.8, 2 #总宽度和并列柱体数
+width = total_width / n
 
-x = ['苹果', '香蕉', '梨', '猕猴桃']
+plt.bar(range(len(list1)), list1, label='part1', color=(0.7, 0.3, 0.8))
+plt.bar(range(len(list1)), list2, bottom=list1, label='part2', tick_label=labels, color=(0.9, 0.9, 0.2))
 
-plt.plot(x, jan_sales, 'r')  # 折线 1 x 2 y 3 color
-plt.plot(x, jan_sales, 'g', lw=5)  # 4 line w
+# 添加标签和标题
+plt.xlabel('x-axis')
+plt.ylabel('y-axis')
+plt.title('bar graph')
+plt.legend()
 
-# 绘图
-plt.bar(range(4), sales, 0.4, color='b', alpha=0.8)
-# 添加轴标签
-plt.ylabel('销量')
-# 添加标题
-plt.title('水果2018年度销量')
-# 添加刻度标签
-plt.xticks(range(4), ['苹果', '香蕉', '梨', '猕猴桃'])
-# 设置Y轴的刻度范围
-plt.ylim([2000, 15000])
-
-# 为每个条形图添加数值标签
-for x, y in enumerate(sales):
-    plt.text(x, y + 100, '%s' % y, ha='center')
-
-# 显示图形
 plt.show()
