@@ -32,3 +32,13 @@ print('均值 average = ',average)
 # 5. 计算最大值和最小值的波动范围
 print('最大值波动范围=',np.ptp(high))
 print('最小值波动范围=',np.ptp(low))
+
+
+'''计算中位数和方差'''
+# 计算中位数方法一
+median = np.median(close)
+print('median = ',median)
+
+# 计算中位数方法二：先排序，再取中间的数
+sorted = np.msort(close)
+print('sorted = ',sorted)
