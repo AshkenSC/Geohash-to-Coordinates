@@ -35,10 +35,15 @@ print('最小值波动范围=',np.ptp(low))
 
 
 '''计算中位数和方差'''
-# 计算中位数方法一
+# 6.1 计算中位数方法一
 median = np.median(close)
 print('median = ',median)
 
-# 计算中位数方法二：先排序，再取中间的数
+# 6.2 计算中位数方法二
 sorted = np.msort(close)
 print('sorted = ',sorted)
+N = len(close)
+middle = sorted[int((N-1)/2)]
+print('middle = ',middle)
+average_mid = (sorted[int(N/2)] + sorted[int((N-1)/2)])/2
+print('average_middle = ',average_mid)
