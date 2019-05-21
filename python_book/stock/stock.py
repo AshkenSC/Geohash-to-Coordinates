@@ -62,3 +62,7 @@ print('diff =',diff)
 
 # 7.1 计算普通收益率
 returns = diff / close[:-1]
+print("收益率 returns = ", returns)
+# 计算收益率标准差
+standard_deviation = np.std(returns)
+print('标准差 standard_deviation =',standard_deviation)
