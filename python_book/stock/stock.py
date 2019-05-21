@@ -47,3 +47,7 @@ middle = sorted[int((N-1)/2)]
 print('middle = ',middle)
 average_mid = (sorted[int(N/2)] + sorted[int((N-1)/2)])/2
 print('average_middle = ',average_mid)
+
+'''计算股票收益率'''
+diff = np.diff(close) # diff函数就是执行的是后一个元素减去前一个元素
+print('diff =',diff)
