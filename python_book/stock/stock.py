@@ -66,3 +66,7 @@ print("收益率 returns = ", returns)
 # 计算收益率标准差
 standard_deviation = np.std(returns)
 print('标准差 standard_deviation =',standard_deviation)
+
+# 7.2 计算对数收益率
+logreturns = np.diff(np.log(close))
+print('对数收益率 logreturns =',logreturns)
