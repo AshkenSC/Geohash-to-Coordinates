@@ -36,8 +36,8 @@ print('最小值波动范围=',np.ptp(low))
 
 '''计算中位数和方差'''
 # 6.1 计算中位数方法一
-median = np.median(close)
-print('median = ',median)
+median1 = np.median(close)
+print('中位数1 median1 = ',median1)
 
 # 6.2 计算中位数方法二
 sorted = np.msort(close)
@@ -45,9 +45,20 @@ print('sorted = ',sorted)
 N = len(close)
 middle = sorted[int((N-1)/2)]
 print('middle = ',middle)
-average_mid = (sorted[int(N/2)] + sorted[int((N-1)/2)])/2
-print('average_middle = ',average_mid)
+median2 = (sorted[int(N/2)] + sorted[int((N-1)/2)])/2
+print('中位数2 median2 = ',median2)
+
+# 6.3 计算方差方法一
+variance1 = np.var(close)
+print('方差1 variance = ',variance1)
+
+# 6.4 计算方差方法二
+variance2 = np.mean((close - close.mean())**2)
+print('方差2 variance_from_definition = ',variance2)
 
 '''计算股票收益率'''
 diff = np.diff(close) # diff函数就是执行的是后一个元素减去前一个元素
 print('diff =',diff)
+
+# 7.1 计算普通收益率
+returns = diff / close[:-1]
