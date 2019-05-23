@@ -70,3 +70,14 @@ print('标准差 standard_deviation =',standard_deviation)
 # 7.2 计算对数收益率
 logreturns = np.diff(np.log(close))
 print('对数收益率 logreturns =',logreturns)
+
+# 7.3 计算价格年度波动率
+annual_volatility = np.std(logreturns) / np.mean(logreturns)
+annual_volatility = annual_volatility / np.sqrt(1./252.) # 252是一年的交易日总和
+print('价格年度波动率 Annual_volatility =',annual_volatility)
+# result: Annual_volatility = 129.27478991115132
+
+# 7.4 计算价格月度波动率
+monthly_volatility = annual_volatility * np.sqrt(1./12.)
+print('价格月度波动率 monthly_volatility =',monthly_volatility)
+# result: monthly_volatility = 37.318417377317765
