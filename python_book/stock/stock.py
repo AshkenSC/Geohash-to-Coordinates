@@ -79,3 +79,11 @@ print('价格年度波动率 nnual_volatility =',annual_volatility)
 # 7.4 计算价格月度波动率
 monthly_volatility = annual_volatility * np.sqrt(1./12.)
 print('价格月度波动率 monthly_volatility =',monthly_volatility)
+
+
+'''计算股票的真实波动幅度均值（ATR）'''
+# 8.1 计算ATR
+N = 20 # 计算ATR时，一般取20个交易日
+high = high[-N:]
+low = low[-N:]
+
