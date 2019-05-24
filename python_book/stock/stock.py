@@ -88,4 +88,4 @@ high = high[-N:]
 low = low[-N:]
 previous_close = close[-N - 1: -1]  # 前一个交易日收盘价
 true_range = np.maximum(high-low, high-previous_close, previous_close-low)  # 计算真实波动幅度
-print('真实波动幅度 rue range ',true_range)
+print('真实波动幅度 true range ',true_range)
