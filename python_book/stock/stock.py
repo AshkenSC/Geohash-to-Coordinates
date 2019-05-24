@@ -86,4 +86,6 @@ print('价格月度波动率 monthly_volatility =',monthly_volatility)
 N = 20 # 计算ATR时，一般取20个交易日
 high = high[-N:]
 low = low[-N:]
-
+previous_close = close[-N - 1: -1]  # 前一个交易日收盘价
+true_range = np.maximum(high-low, high-previous_close, previous_close-low)  # 计算真实波动幅度
+print('真实波动幅度 rue range ',true_range)
