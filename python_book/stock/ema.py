@@ -1,26 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-'''»æÖÆÖ¸ÊıÒÆ¶¯Æ½¾ùÏß'''
+'''ç»˜åˆ¶æŒ‡æ•°ç§»åŠ¨å¹³å‡çº¿'''
 
-# ¼ÆËãÈ¨ÖØÊı×éweights
+# è®¡ç®—æƒé‡æ•°ç»„weights
 x = np.arange(5)
 N = 5
 weights = np.exp(np.linspace(-1.,0.,N))
 weights /= weights.sum()
 
-# ´ÓÊı¾İÔ´»ñÈ¡ÊÕÅÌ¼Ûclose
+# ä»æ•°æ®æºè·å–æ”¶ç›˜ä»·close
 close = np.loadtxt("petro_china.csv", delimiter=',', usecols=(3, ), unpack=True, skiprows=1)
 
-# ¼ÆËãÖ¸ÊıÒÆ¶¯Æ½¾ùÏßema
+# è®¡ç®—æŒ‡æ•°ç§»åŠ¨å¹³å‡çº¿ema
 ema = np.convolve(weights, close)[N-1:-N+1]
 
-# ºá×ø±ê
+# æ¨ªåæ ‡
 t = np.arange(N-1, len(close))
 
-# »æÍ¼
-plt.plot(t, close[N-1:], lw=1.0)                # »æÖÆÊÕÅÌ¼Û
-plt.plot(t, ema, lw=2.0)                        # »æÖÆema
-plt.legend(loc='best', labels=['close', 'ema']) # »æÖÆÍ¼Àı
-plt.grid()                                      # »æÖÆÍø¸ñ
+# ç»˜å›¾
+plt.plot(t, close[N-1:], lw=1.0, color='red')   # ç»˜åˆ¶æ”¶ç›˜ä»·
+plt.plot(t, ema, lw=2.0, color='blue')          # ç»˜åˆ¶ema
+plt.legend(loc='best', labels=['close', 'ema']) # ç»˜åˆ¶å›¾ä¾‹
+plt.grid()                                      # ç»˜åˆ¶ç½‘æ ¼
 plt.show()
