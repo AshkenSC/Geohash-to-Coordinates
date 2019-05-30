@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 '''绘制简单移动平均线'''
 
+# 计算权重数组weights
 N = 5      # 绘制5天移动平均线，因此N取5
 weights = np.ones(N) / N
 
