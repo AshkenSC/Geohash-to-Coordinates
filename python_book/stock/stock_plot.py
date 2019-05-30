@@ -18,4 +18,5 @@ t = np.arange(N - 1, len(close))
 plt.plot(t, close[N - 1:], lw=1.0, color='red')  # 绘制收盘价
 plt.plot(t, sma, lw=2.0, color='blue')           # 绘制SMA
 plt.legend(loc='best', labels=['close', 'sma'])  # 绘制图例
+plt.grid()                                       # 绘制网格
 plt.show()
