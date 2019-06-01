@@ -42,9 +42,6 @@ print(lowerBB[between_bands])
 print(close[between_bands])
 print(upperBB[between_bands])
 
-between_bands = len(np.ravel(between_bands))
-print('Ratio between bands ',float(between_bands)/len(c_slice))
-
 # 横坐标
 t = np.arange(N-1,C)
 
