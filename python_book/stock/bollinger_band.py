@@ -1,7 +1,7 @@
+'''绘制布林带'''
+
 import numpy as np
 import matplotlib.pyplot as plt
-
-'''绘制布林带'''
 
 # 计算权重数组weights
 N = 5
