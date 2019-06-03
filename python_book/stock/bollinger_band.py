@@ -51,4 +51,5 @@ plt.plot(t, sma, lw=2.0)        # 绘制sma
 plt.plot(t, upperBB, lw=3.0)    # 绘制下轨线
 plt.plot(t, lowerBB, lw=4.0)    # 绘制上轨线
 plt.legend(loc='best', labels=['c_slice', 'sma', 'upperBB', 'lowerBB']) # 绘制图例
+plt.grid()
 plt.show()
