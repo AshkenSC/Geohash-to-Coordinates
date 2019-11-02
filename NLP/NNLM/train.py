@@ -1,181 +1,248 @@
 '''
-https://blog.csdn.net/aaalswaaa1/article/details/84778725
+https://zhuanlan.zhihu.com/p/37886740
 '''
 
-import glob
-import random
-import math
-import pickle
+# coding: utf-8
 import numpy as np
+import tensorflow as tf
+
+# 定义文件路径
+TRAIN_DATA = 'ptb.train'
+TEST_DATA = 'ptb.test'
+EVAL_DATA = 'ptb.valid'
+
+# 定义超参数
+HIDDEN_SIZE = 300
+NUM_LAYERS = 2  # LSTM 结构的层数
+VOCAB_SIZE = 10000  # 字典规模
+TRAIN_BATCH_SIZE = 20  # 训练数据batch大小
+TRAIN_NUM_STEP = 35  # 训练数据阶段长度
+
+EVAL_BATCH_SIZE = 1  # 测试数据batch大小
+EVAL_NUM_STEP = 1  # 测试数据阶段长度
+NUM_EPOCH = 5  # 使用训练数据轮数
+LSTM_KEEP_PROB = 0.9
+EMBEDDING_KEEP_PROB = 0.9
+MAX_GRAD_NORM = 5  # 用于控制梯度膨胀的梯度大小上限
+SHARED_EMB_AND_SOFTMAX = True  # 在softmax层和词向量层之间共享参数
 
 
-# 激活函数
-def tanh(o, d):
-    x = []
-    for i in o:
-        x.append(math.tanh(i))
-    return x
+# 通过一个PTBModel类来描述模型
+class PTBModel(object):
+    def __init__(self, is_training, batch_size, num_steps):
+        '''
+        Arg:
+            is_training: 表示是否在训练
+            batch_size: 表示batch size
+            num_stpes: 表示截断长度
+        '''
+        self.batch_size = batch_size
+        self.num_steps = num_steps
+        self.input_data = tf.placeholder(tf.int32, [batch_size, num_steps])
+        self.targets = tf.placeholder(tf.int32, [batch_size, num_steps])
+
+        # 构造LSTM结构，多层的LSTM，包括了dropout机制
+        dropout_keep_prob = LSTM_KEEP_PROB if is_training else 1.0
+        lstm_cells = [
+            tf.nn.rnn_cell.DropoutWrapper(
+                tf.nn.rnn_cell.BasicLSTMCell(HIDDEN_SIZE),
+                output_keep_prob=dropout_keep_prob
+            ) for _ in range(NUM_LAYERS)
+        ]
+        # 多层结构
+        cell = tf.nn.rnn_cell.MultiRNNCell(lstm_cells)
+
+        # 表示初始状态
+        self.initial_state = cell.zero_state(batch_size, tf.float32)
+
+        # 定义单词的词向量矩阵
+        embedding = tf.get_variable("embedding", [VOCAB_SIZE, HIDDEN_SIZE])
+
+        # 将数据转化为词向量表示
+        inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+
+        # 只在训练时使用dropout
+        if is_training:
+            inputs = tf.nn.dropout(inputs, EMBEDDING_KEEP_PROB)
+
+        # 定义输出列表，先将不同时刻LSTM结构的输出收集起来，再一起提供给softmax层
+        outputs = []
+        state = self.initial_state
+        with tf.variable_scope('RNN'):
+            for time_step in range(num_steps):
+                if time_step > 0:
+                    tf.get_variable_scope().reuse_variables()
+                cell_output, state = cell(inputs[:, time_step, :], state)  # 每次计算每个time_step的结果
+                outputs.append(cell_output)
+
+        # 把输出队列展开成[batch, hidden_size * num_steps]的形状，然后再reshape成
+        output = tf.reshape(tf.concat(outputs, 1), [-1, HIDDEN_SIZE])
+
+        # softmax层：将RNN在每个位置上的输出转化为各个单词的logits
+        if SHARED_EMB_AND_SOFTMAX:
+            weight = tf.transpose(embedding)
+        else:
+            weight = tf.get_variable("weight", [HIDDEN_SIZE, VOCAB_SIZE])
+
+        bias = tf.get_variable("bias", [VOCAB_SIZE])
+
+        logits = tf.matmul(output, weight) + bias
+
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+            labels=tf.reshape(self.targets, [-1]),
+            logits=logits
+        )
+        self.cost = tf.reduce_sum(loss) / batch_size
+        self.final_state = state
+
+        # 如果是训练状态，那么还需要实现反向传播
+        if not is_training:
+            return
+
+        # 这个训练过程没有学过
+        trainable_variables = tf.trainable_variables()
+        grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, trainable_variables), MAX_GRAD_NORM)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=1.0)
+        self.train_op = optimizer.apply_gradients(
+            zip(grads, trainable_variables)
+        )
 
 
-def get_stopword_list(path):
-    """
-    载入停用词
-    """
-    stopword_list = [sw.replace('\n', '')
-                     for sw in open(path, 'r', encoding='utf8')]
-    return stopword_list
+# In[4]:
 
 
-def data_pre(path):
-    """
-    数据载入，以及完成分词,统计总词数
-    """
-    import jieba
-    content = []
-    with open(path, 'r', encoding='gbk', errors='ignore') as f:
-        # sw_list = get_stopword_list('./data/stop_words.utf8')
-        for l in f:
-            l = l.strip()
-            if (len(l) == 0):
-                continue
-            l = [x for x in jieba.cut(l) if x not in get_stopword_list(
-                './data/stop_words.utf8')]
-            content.append(l)
-    return content
+def run_epoch(session, model, batches, train_op, output_log, step):
+    '''
+    训练函数
+    Args:
+        session 上下文
+        model 上述模型的实例
+        batches 数据
+        train_op
+        output_log 是否打印输出日志
+        step
+    Return:
+        step
+        结果
+    '''
+    total_costs = 0.0
+    iters = 0
+    state = session.run(model.initial_state)
+
+    # 训练一个epoch
+    for x, y in batches:
+        # 在当前batch上运行train_op 并计算损失值
+        cost, state, _ = session.run([model.cost, model.final_state, train_op],
+                                     feed_dict={model.input_data: x, model.targets: y, model.initial_state: state}
+                                     )
+        total_costs += cost
+        iters += model.num_steps  # 迭代次数
+
+        # 在训练时输出日志
+        if output_log and step % 100 == 0:
+            print("After %d steps, perplexity is % .3f" % (step, np.exp(total_costs / iters)))
+        step += 1
+
+    return step, np.exp(total_costs / iters)
 
 
-# 随机生成词向量并分配词id
-def creat_wv(wd, m):
-    wd = {i: [random.random() for x in range(m)] for i in wd}
-    idd = 0
-    wid = {}
-    for i in wd:
-        wid[i] = wid.get(i, 0) + idd
-        idd += 1
-    # wd['space__']=[random.random() for x in range(m)]
-    # wid['space__']=wid.get(i,0)+idd
-    return wd, wid
+def read_data(file_path):
+    '''
+    读取数据，返回包含单词编号的数组，一整个文本的内容作为一个数组返回，每行句子拼接起来
+    '''
+    with open(file_path, 'r') as fin:
+        id_string = ' '.join([line.strip() for line in fin.readlines()])
+    id_list = [int(w) for w in id_string.split()]
+    return id_list
 
 
-f = glob.glob(r'./data/news/*.txt')
-data = []
-wd = {}
-c = 0
-sf = len(f)
-for text in f:
-    c += 1
-    temp = data_pre(text)
-    data.extend(temp)
-    for t in temp:
-        for w in t:
-            wd[w] = wd.get(w, 0) + 1
-    print(text + ' complete ', end='')
-    print(c / sf)
-# print(data)
-savedata = np.array(data)
-swd = np.array(wd)
-np.save('./data/sogo_news.npy', savedata)
-np.save('./data/myw2vwd.npy', swd)
-# data = np.load('./data/sogo_news.npy').tolist()
-# 初始化神经网络
-h = 100
-v = len(wd)
-m = 100
-n = 4
-win = 2
-theta = 0.1  # 学习率
-# 输入层到隐藏权值，shape=n*m  *  h    n为window的大小，h为隐层神经元个数
-H = [[random.random() for j in range(n * m)] for i in range(h)]
-H = np.array(H)
-d = [random.random() for j in range(h)]  # 隐层偏置 shape=1*h
-U = [[random.random() for j in range(h)]
-     for i in range(v)]  # 隐层到输出层权值 shape=h*V V为词的总数目
-b = [random.random() for j in range(v)]  # 输出层偏置 shape = 1* V
-maxtime = 5
-sapce = [0 for i in range(m)]  # 空词向量
-wvd, wid = creat_wv(wd, m)  # 随机生成词向量和id
-sums = len(data)
-while (maxtime > 0):
-    maxtime -= 1
-    # 训练神经网络
-    sm = 0
-    for s in data:  # s 是一句话
-        aa = (sm + 0.0) / sums
-        sm += 1
-        print('less', end='')
-        print(maxtime, end='------------')
-        print(aa)
-        for w in range(len(s)):  # w是目标词下标
-            # 构建输入向量x
-            x = []
-            inputword = []
-            w_id = wid[s[w]]  # 目标词id
-            # w_id2 = []#输入词
-            for i in range(w - win, w + win + 1):
-                # w_id2.append(s[i])
-                if i < 0:
-                    x.extend(sapce)
-                elif i == w:
-                    continue
-                elif i >= len(s):
-                    x.extend(sapce)
-                else:
-                    x.extend(wvd[s[i]])
-                    inputword.append(s[i])
+def make_batches(id_list, batch_size, num_step):
+    '''
+    获取到batch
+    Args:
+        id_list: 一整个文本组成的数组，内容是word的id
+        batch_size: batch的大小
+        num_step: 表示训练时的上下文，输入的单词个数
+    '''
+    num_batches = (len(id_list) - 1) // (batch_size * num_step)  # batch的数量
+    print
+    num_batches
+    data = np.array(id_list[:num_batches * batch_size * num_step])
+    print
+    data.shape
+    data = np.reshape(data, [batch_size, num_batches * num_step])  # 将数据切分成 batch_size, num_batches * num_steps的数组
+    # 沿着第二个维度将数据切分为num_batches的batch，存入一个数组
+    print
+    data.shape
+    data_batches = np.split(data, num_batches, axis=1)
+    print
+    data_batches[0].shape
 
-            # ---前向计算------------------------
-            # 计算隐层输入
-            o = np.dot(x, H.T) + d
-            # 计算隐层输出
-            a = tanh(o, 1)
-            a = np.array(a)
-            # 计算输出层输入
-            U = np.array(U)
-            # H = np.array(H)
-            y = np.dot(a, U.T) + b
-            y = y.tolist()
-            # 计算输出
-            p = [math.exp(i) for i in y]
-            S = sum(p)
-            p = [i / S for i in p]
-            # ----前向计算结束------------------------
+    label = np.array(id_list[1:num_batches * batch_size * num_step + 1])
+    label = np.reshape(label, [batch_size, num_batches * num_step])
+    label_batches = np.split(label, num_batches, axis=1)
+    return list(zip(data_batches, label_batches))
 
-            # 计算目标函数L
-            if p[w_id] != 0:
-                L = math.log(p[w_id])
-            else:
-                L = 2.2250738585072014e-200
 
-            # ----反向传播------------------------
-            la = 0
-            lx = 0
-            ly = [-i for i in p]
-            ly[w_id] += 1
-            b = np.array(b)
-            ly = np.array(ly)
-            lb = b + theta * ly
-            la = ly[0] * U[0]
-            for j in range(1, v):
-                la += theta * ly[j] * U[j]
-            for j in range(1, v):
-                U[j] += theta * la
-            lo = [0 for q in range(len(la))]
-            lo = np.array(lo)
-            for k in range(h):
-                lo[k] = (1 - a[k] * a[k]) * la[k]
-            lx = np.dot(H.T, lo)
-            d += theta * lo
-            x = np.matrix(x)
-            lo = np.matrix(lo)
-            H += theta * np.dot(lo.T, x)
-            x += theta * lx
-            x = x.tolist()[0]
-            for q in range(len(inputword)):
-                a = x[0 + i * m:m + i * m]
-                for j in range(len(a)):
-                    wvd[inputword[q]][j] += a[j]
-            # ---反向更新结束
-# 保存数据
-output = open('./data/myw2v.pkl', 'wb')
-pickle.dump(wvd, output)
+def main():
+    initializer = tf.random_uniform_initializer(-0.05, 0.05)  # 初始化函数
 
+    # 训练的RNN模型
+    with tf.variable_scope("language_model", reuse=None, initializer=initializer):
+        train_model = PTBModel(is_training=True, batch_size=TRAIN_BATCH_SIZE, num_steps=TRAIN_NUM_STEP)
+
+    # 测试用的模型，与train_model共用参数，但没有dropout(is_training=False)
+    with tf.variable_scope("language_model", reuse=True, initializer=initializer):
+        eval_model = PTBModel(is_training=False, batch_size=EVAL_BATCH_SIZE, num_steps=EVAL_NUM_STEP)
+
+    # 训练模型
+    with tf.Session() as sess:
+        # 初始化
+        tf.global_variables_initializer().run()
+
+        # 训练数据
+        train_batches = make_batches(
+            read_data(TRAIN_DATA),
+            TRAIN_BATCH_SIZE,
+            TRAIN_NUM_STEP
+        )
+
+        # eval数据
+        eval_batches = make_batches(
+            read_data(EVAL_DATA),
+            EVAL_BATCH_SIZE,
+            EVAL_NUM_STEP
+        )
+
+        # test数据
+        test_batches = make_batches(
+            read_data(TEST_DATA),
+            EVAL_BATCH_SIZE,
+            EVAL_NUM_STEP
+        )
+
+        step = 0
+        # 每一轮
+        for i in range(NUM_EPOCH):
+            print("In iteration: %d" % (i + 1))
+            # 训练过程
+            step, train_pplx = run_epoch(sess, train_model, train_batches,
+                                         train_model.train_op,
+                                         output_log=True,
+                                         step=step
+                                         )
+            print("Epoch: %d Train Perplexity: %.3f" % (i + 1, train_pplx))
+
+            # evaluation过程
+            _, eval_pplx = run_epoch(sess, eval_model, eval_batches,
+                                     tf.no_op(),
+                                     output_log=False,
+                                     step=0
+                                     )
+            print("Epoch: %d Eval Perplexity: %.3f" % (i + 1, eval_pplx))
+        _, test_pplx = run_epoch(sess, eval_model, eval_batches, tf.no_op(), output_log=False, step=0)
+        # 训练结束进行test
+        print("Test Perplexity: %.3f" % (test_pplx))
+
+
+main()
