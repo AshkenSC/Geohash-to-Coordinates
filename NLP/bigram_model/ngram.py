@@ -4,6 +4,7 @@ https://blog.csdn.net/Yellow_python/article/details/89088854
 
 '''-----------------'''
 '''1. 模块导入'''
+'''-----------------'''
 from collections import Counter
 import numpy as np
 import pandas as pd
@@ -11,7 +12,8 @@ pdf = lambda data, index=None, columns=None: pd.DataFrame(data, index, columns)
 
 
 '''-----------------'''
-'''2. 语料预处理'''
+2. 语料预处理
+'''-----------------'''
 # 语料
 corpus = '她很香 她很菜 她很好 他很菜 他很好 菜很好'
 corpus = corpus.split()     # 将句子分割并存入列表中
@@ -45,7 +47,8 @@ print('\n')
 
 
 '''-----------------'''
-'''3. unigram'''
+3. unigram
+'''-----------------'''
 unigram = np.array([entry[1] for entry in counter])
 unigram = unigram / sum(unigram)
 
@@ -57,6 +60,7 @@ print('\n')
 
 '''-----------------'''
 '''4. bigram'''
+'''-----------------'''
 # 初始化bigram数组，并进行平滑
 bigram = np.zeros((char_count, char_count))
 bigram = bigram  + 1e-8     # 平滑
@@ -81,6 +85,7 @@ print('\n')
 
 '''-----------------'''
 '''5. 概率计算'''
+'''-----------------'''
 def sentence_prob(sentence):
     # 将句子字符转为对应编号后存储于列表id_sentence
     id_sentence = []
