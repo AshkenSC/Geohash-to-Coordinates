@@ -1,4 +1,6 @@
-#用于正常显示文本内容
+'''注意：在不同文件夹下要修改文件地址'''
+
+#用于print()正常显示文本内容
 '''
 import sys,io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="gb18030")
