@@ -4,17 +4,24 @@ from sklearn.manifold import TSNE
 import numpy as np
 import matplotlib.pyplot as plt
 
+'''定义变量名'''
+# 输出模型名
+OUTPUT_MODEL = 'ptb.model'
+OUTPUT_VECTOR = 'ptb.vetor'
+# 源数据路径
+DATA_PATH = 'D:\\Project\\Python\\PythonGadgets\\NLP\\NNLM\\simple-examples\\data\\ptb.train.txt'
+
 
 '''训练模型'''
 def train(data):
     inp=data
-    outp1 = 'abc_news200.model'
-    outp2 = 'abc_data200.vector'
-    print('Loading data...\n')
+    outp1 = OUTPUT_MODEL
+    outp2 = OUTPUT_VECTOR
+    print('正在载入数据...\n')
     model = Word2Vec(LineSentence(inp), size=200, window=5, min_count=5, workers=4)
-    print('Finished data loading.\n')
+    print('数据载入完成。\n')
     model.save(outp1)
-    print('The model has been saved.\n')
+    print('模型已储存。\n')
     model.wv.save_word2vec_format(outp2, binary=False)
 
 '''导入指定词及其相似词的词向量'''
@@ -55,26 +62,26 @@ def plot_tSNE(word_vector, wordlist, dot_color):
 '''模型测试'''
 # 模型训练
 #train('D:\\Project\\Python\\PythonGadgets\\word_vector\\fasttext\\clean_data.txt')
-train('D:\\Project\\Python\\PythonGadgets\\word_vector\\headline_data\\million-headlines\\abcnews-date-text.csv')
+#train('D:\\Project\\Python\\PythonGadgets\\word_vector\\headline_data\\million-headlines\\abcnews-date-text.csv')
 #train('D:\\Project\\Python\\PythonGadgets\\word_vector\\headline_data\\million-headlines\\test.csv')
+train(DATA_PATH)
 # 载入模型
-model = Word2Vec.load('abc_news200.model')
-print('Model loading done.')
-word1 = 'uk'
+model = Word2Vec.load(OUTPUT_MODEL)
+print('模型载入完成')
+word1 = 'britain'
 word2 = 'british'
-word3 = 'qantas'
-
+word3 = 'market'
 
 # 分布式词向量
-print('The word vector of “' + word1 + '” is:')
+print('“' + word1 + '”的词向量是:')
 print(model.wv[word1])
 # 测试单词的最近相似单词
-print("Words similar to “" + word1 + "” are:")
+print("与“" + word1 + "” 最相似的词为:")
 print(model.wv.most_similar([word1], topn=100))
 # 测试两个单词间的相似度
-print('The similarity between ' + word1 + ' and ' + word2 + ' is:')
-print(model.wv.similarity(word1, word2))
-print('The similarity between ' + word1 + ' and ' + word3 + ' is:')
+print('“' + word1 + '”与“' + word2 + '”的相似度为:')
+print( (word1, word2))
+print('“' + word1 + '”与“' + word3 + '”的相似度为:')
 print(model.wv.similarity(word1, word3))
 
 
@@ -83,13 +90,13 @@ print(model.wv.similarity(word1, word3))
 # 导入指定词的词向量
 words = []
 word_vector = []
-load_similar_vectors('uk', 100, words, word_vector, model)
-load_similar_vectors('qantas', 100, words, word_vector, model)
-load_similar_vectors('rain', 100, words, word_vector, model)
-load_similar_vectors('obama', 100, words, word_vector, model)
+load_similar_vectors('investor', 100, words, word_vector, model)
+load_similar_vectors('britain', 100, words, word_vector, model)
+load_similar_vectors('market', 100, words, word_vector, model)
+load_similar_vectors('company', 100, words, word_vector, model)
 
 word_vector = np.array(word_vector)
 print('Vectors loading done.')
 # 绘图
-plot_tSNE(word_vector, words, 'green')
-plt.show()
+#plot_tSNE(word_vector, words, 'green')
+#plt.show()
