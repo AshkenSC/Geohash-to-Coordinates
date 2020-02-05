@@ -6,6 +6,10 @@ from threading import Thread, Timer
 from time import sleep, time
 import json, os, fire
 
+label_keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '科学', '科研人员', \
+            '科学百科生命科学分类', '科学百科健康医疗分类', '科学百科农业科学分类']
+summary_keywords = ['病毒', '微生物', '传染病', '病原体', '肺炎', '传染', '免疫', '呼吸系统']
+
 class Spider(object):
     def __init__(self, worker_num=10, chunk_size=10000, log_interval=600,
                  data_dir='data', log_dir='log'):
@@ -99,18 +103,22 @@ class Spider(object):
                 name = new_data['name']
                 if name not in self.name_cache:
                     self.name_cache.add(name)
-                    # TODO:添加筛选条件
-                    if '病毒' in new_data['labels'] or '微生物' in new_data['labels']\
-                    or '传染病' in new_data['summary'] or '病原体' in new_data['summary'] \
-                    or '肺炎' in new_data['summary'] or '感染' in new_data['summary'] \
-                    or '传染' in new_data['summary'] or 'RNA病毒' in new_data['summary'] \
-                    or 'DNA病毒' in new_data['summary'] or '冠状病毒' in new_data['summary'] \
-                    or '免疫' in new_data['summary'] or '呼吸系统' in new_data['summary']:
+                    # TODO:设置筛选条件
+                    label_related = False
+                    summary_related = False
+                    for label_keyword in label_keywords:
+                        if label_keyword in new_data['labels']:
+                            label_related = True
+                            break
+                    for summary_keyword in summary_keywords:
+                        if summary_keyword in new_data['summary']:
+                            summary_related = True
+                            break
+                    if label_related and summary_related:
                         self.results.put(new_data)
                         print('获取条目：' + name)
                     else:
-                        print("\033[0;31m%s\033[0m" %('放弃条目 ' + name + ' :分类不符'))
-                        #print('放弃条目 ' + name + ':没有属性信息或分类不符')
+                        print("\033[0;31m%s\033[0m" % ('放弃条目 ' + name + ' :分类不符'))
                 for url in new_urls:
                     if url not in self.url_cache and url not in self.black_urls:
                         self.url_cache.add(url)
@@ -124,8 +132,8 @@ def main(worker_num=20,
          log_interval=600,
          data_dir='data',
          log_dir='log',
-         #start_url='https://baike.baidu.com/item/姚明/28'):
-         start_url='https://baike.baidu.com/item/2019%E6%96%B0%E5%9E%8B%E5%86%A0%E7%8A%B6%E7%97%85%E6%AF%92'):
+         start_url='https://baike.baidu.com/item/%E5%BE%AE%E7%94%9F%E7%89%A9/147527?fr=aladdin'):
+         #start_url='https://baike.baidu.com/item/2019%E6%96%B0%E5%9E%8B%E5%86%A0%E7%8A%B6%E7%97%85%E6%AF%92'):
          #start_url='https://baike.baidu.com/wikitag/taglist?tagId=76625'):
 
 
