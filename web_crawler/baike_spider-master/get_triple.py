@@ -1,14 +1,13 @@
 import json
-SOURCE = 'baike.json'  # json数据源路径
-DEST = 'baike_triple.txt' # 三元组路径
+SOURCE = 'data\\baike_2949.json'  # json数据源路径
+DEST = 'baike_triple_formatted.txt' # 三元组路径
 
-#keywords = ['病毒', '微生物', '疾病', '传染病', '传染', 'RNA病毒', 'DNA病毒', '冠状病毒', '免疫', '呼吸系统']
 keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '科学', '科研人员', \
             '科学百科生命科学分类', '科学百科健康医疗分类', '科学百科农业科学分类']
 
-
 # 读取并筛选json数据
 triples = []
+entities = []
 deleted = []
 cnt = 0
 with open(SOURCE, encoding='utf-8') as f:
@@ -33,9 +32,10 @@ with open(SOURCE, encoding='utf-8') as f:
                 value.replace('\n', ' ')    # 替换value里的换行
                 new_triple = (line['name'], key, value)
                 triples.append(new_triple)
+                entities.append(line['name'])   # 记录所有实体的名称
                 # 新增三元组暂时无法print，有utf8编码错误
-                #print('新增三元组：', end='')
-                #print(new_triple)
+                # print('新增三元组：', end='')
+                # print(new_triple)
                 cnt += 1
     print('读取完毕，共导入三元组' + str(cnt) + '个')
 
@@ -43,8 +43,14 @@ with open(SOURCE, encoding='utf-8') as f:
 output = open(DEST, 'w', encoding='utf-8')
 cnt = 1
 for triple in triples:
-    output.write(triple[0] + ';;;;ll;;;;' + triple[1] + ';;;;ll;;;;' + triple[2] + '\n')
-    #print('正在写入第' + str(cnt) + '个三元组')
+    # 将实体和literal格式化，实体加上<>，或literal加上""
+    if triple[2] in entities:
+        output.write('<' + triple[0] + '>' + ';;;;ll;;;;' + triple[1] +
+                     ';;;;ll;;;;' + '<' + triple[2] + '>' + '\n')
+    else:
+        output.write('<' + triple[0] + '>' + ';;;;ll;;;;' + triple[1] +
+                     ';;;;ll;;;;' + '\"' + triple[2] + '\"' + '\n')
+    print('正在写入第' + str(cnt) + '个三元组')
     cnt += 1
 output.close()
 print('三元组写入完毕')
