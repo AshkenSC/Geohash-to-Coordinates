@@ -33,9 +33,9 @@ with open(SOURCE, encoding='utf-8') as f:
                 new_triple = (line['name'], key, value)
                 triples.append(new_triple)
                 entities.append(line['name'])   # 记录所有实体的名称
-                # 新增三元组暂时无法print，有utf8编码错误
-                # print('新增三元组：', end='')
-                # print(new_triple)
+                # 输出新增三元组
+                print('新增三元组：', end='')
+                print(new_triple.__str__().encode('GBK','ignore').decode('GBk'))
                 cnt += 1
     print('读取完毕，共导入三元组' + str(cnt) + '个')
 
