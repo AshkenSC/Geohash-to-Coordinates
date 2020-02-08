@@ -1,6 +1,8 @@
+# 合并多次爬取产生的json数据，并删除重复项目
+
 import json
-OLD = 'data\\data1.json'
-NEW = 'data\\data2.json'
+OLD = 'processing\\baike_2761.json'
+NEW = 'processing\\data4.json'
 
 # 读取老数据词条名
 old_names = list()
@@ -17,7 +19,7 @@ for json_line in new:
     line = json.loads(json_line)
     if line['name'] not in old_names:
         print('正在写入新条目：' + line['name'])
-        old.write(json.dumps(line))
+        old.write(json.dumps(line) + '\n')
         cnt += 1
     else:
         print('该条目已存在：' + line['name'])

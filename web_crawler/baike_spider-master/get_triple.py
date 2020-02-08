@@ -1,3 +1,5 @@
+# 从爬取的json数据中获取格式化三元组
+
 import json
 SOURCE = 'data\\baike_2949.json'  # json数据源路径
 DEST = 'baike_triple_formatted.txt' # 三元组路径
