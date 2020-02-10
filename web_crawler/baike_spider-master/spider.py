@@ -128,9 +128,9 @@ class Spider(object):
                             break
                     if label_related and summary_related:
                         self.results.put(new_data)
-                        print('获取条目：' + name)
+                        print(('获取条目：' + name).encode('GBK', 'ignore').decode('GBk'))
                     else:
-                        print("\033[0;31m%s\033[0m" % ('放弃条目 ' + name + ' :分类不符'))
+                        print("\033[0;31m%s\033[0m" % ('放弃条目 ' + name + ' :分类不符').encode('GBK', 'ignore').decode('GBk'))
                 for url in new_urls:
                     if url not in self.url_cache and url not in self.black_urls:
                         self.url_cache.add(url)
