@@ -5,10 +5,11 @@ from queue import Queue
 from threading import Thread, Timer
 from time import sleep, time
 import json, os, fire
+from urllib import request
 
 label_keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '科学', '科研人员', \
             '科学百科生命科学分类', '科学百科健康医疗分类', '科学百科农业科学分类']
-summary_keywords = ['病毒', '微生物', '传染病', '病原体', '肺炎', '传染', '免疫', '呼吸系统']
+summary_keywords = ['菌', '病毒', '微生物', '传染病', '病原体', '肺炎', '传染', '免疫', '呼吸系统']
 
 class Spider(object):
     def __init__(self, worker_num=10, chunk_size=10000, log_interval=600,
@@ -54,19 +55,28 @@ class Spider(object):
         
     def _write(self):
         """只使用self.results
+           新增功能：保存爬取页面的html源代码
         """
+
         while self.state:
             self.chunk_num += 1
             n = 0
             with open(os.path.join(self.data_dir, '{}.json'.format(self.chunk_num)), 'wb') as fp:
-                while n < self.chunk_size:
-                    if not self.results.empty():
-                        result = self.results.get()
-                        line = json.dumps(result, ensure_ascii=False) + '\n'
-                        fp.write(line.encode('utf8'))
-                        n += 1
-                    else:
-                        sleep(10)
+                with open('data\\pages.txt', 'wb') as pages:
+                    while n < self.chunk_size:
+                        if not self.results.empty():
+                            result = self.results.get()
+                            line = json.dumps(result, ensure_ascii=False) + '\n'
+                            fp.write(line.encode('utf8'))
+
+                            # 保存html源代码
+                            wp = request.urlopen(result['url'])  # 打开连接
+                            content = wp.read()  # 获取页面内容
+                            pages.write(content)
+
+                            n += 1
+                        else:
+                            sleep(10)
 
     def _log(self):
         now = len(self.name_cache)
@@ -110,6 +120,8 @@ class Spider(object):
                         if label_keyword in new_data['labels']:
                             label_related = True
                             break
+                    if not new_data['labels']:  # 针对无标签但与主题有关的特殊情况，设他们为True
+                        label_related = True
                     for summary_keyword in summary_keywords:
                         if summary_keyword in new_data['summary']:
                             summary_related = True
