@@ -49,7 +49,7 @@ class HtmlParser(object):
 
         # get information
         info_node = soup.find('div', class_="basic-info cmn-clearfix")
-        # TODO
+        # TODO key名与spider中调用的不一致，已更改
         if info_node is None:
             res_data['info'] = []
         else:
@@ -136,6 +136,8 @@ class HtmlParser(object):
         soup = self._clean_soup(soup)
         new_urls = self._get_new_urls(soup)
         new_data = self._get_new_data(soup)
+        # 在数据后添加页面url以作记录
+        new_data['url'] = url
         return new_urls, new_data
 
 
