@@ -19,8 +19,8 @@ label_keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '�
 summary_keywords = ['菌', '病毒', '微生物', '传染病', '病原体', '肺炎', '传染', \
                     '免疫', '呼吸系统',\
                     '适应症','抗生素','综合征','处方药','非处方药',\
-                    '影像学','造影','医学检查','医学影像','影像检查','医学诊断']
-# ,'临床','症状','综合征'
+                    '影像学','造影','医学检查','医学影像','影像医学','影像检查','医学诊断','临床','症状','综合征']
+
 
 class Spider(object):
     def __init__(self, worker_num=10, chunk_size=10000, log_interval=600,
@@ -29,7 +29,6 @@ class Spider(object):
         self.log_interval = log_interval
         self.urls = Queue()
         self.results = Queue()
-        self.html_pages = Queue()   # 新增html内容保存队列，用于输出html源代码
         self.url_cache = Set()
         self.name_cache = Set()
         self.black_urls = Set()
@@ -53,8 +52,7 @@ class Spider(object):
 
 
     def start(self, url):
-        new_urls, new_data, new_html = self.parser.parse(url)
-        self.html_pages.put(new_html)   # 将新获取的html源代码加入html输出队列
+        new_urls, new_data = self.parser.parse(url)
         self.results.put(new_data)
         self.url_cache.add(url)
         self.name_cache.add(new_data['name'])
@@ -75,20 +73,16 @@ class Spider(object):
             self.chunk_num += 1
             n = 0
             with open(os.path.join(self.data_dir, '{}.json'.format(self.chunk_num)), 'wb') as fp:
-                with open('data\\pages.txt', 'wb') as pages:
-                    while n < self.chunk_size:
-                        if not self.results.empty():
-                            result = self.results.get()
-                            line = json.dumps(result, ensure_ascii=False) + '\n'
-                            fp.write(line.encode('utf8'))
+                while n < self.chunk_size:
+                    if not self.results.empty():
+                        result = self.results.get()
+                        line = json.dumps(result, ensure_ascii=False) + '\n'
+                        fp.write(line.encode('utf8'))
+                        print('写入词条成功')
 
-                            # 输出保存的html源代码
-                            html_page = self.html_pages.get()
-                            pages.write(html_page)
-
-                            n += 1
-                        else:
-                            sleep(10)
+                        n += 1
+                    else:
+                        sleep(10)
 
     def _log(self):
         now = len(self.name_cache)
@@ -112,8 +106,9 @@ class Spider(object):
             if not self.urls.empty():
                 url = self.urls.get()
                 try:
-                    new_urls, new_data = self.parser.parse(url)
+                    new_urls, new_data = self.parser.parse(url) # TODO
                 except:
+                    print('url爬取失败')
                     self.url_cache.remove(url)
                     # 多次请求不成功的url加入黑名单
                     if url not in self.black_cache:
@@ -121,6 +116,7 @@ class Spider(object):
                     self.black_cache[url] += 1
                     if self.black_cache[url] >= 3:
                         self.black_urls.add(url)
+                        print('url黑名单已更新')
                     continue
                 name = new_data['name']
                 if name not in self.name_cache:
@@ -138,7 +134,7 @@ class Spider(object):
                         if summary_keyword in new_data['summary']:
                             summary_related = True
                             break
-                    if label_related and summary_related:
+                    if label_related or summary_related:
                         self.results.put(new_data)
                         print(('获取条目：' + name).encode('GBK', 'ignore').decode('GBk'))
                     else:
