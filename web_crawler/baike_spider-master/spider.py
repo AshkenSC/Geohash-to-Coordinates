@@ -7,9 +7,20 @@ from time import sleep, time
 import json, os, fire
 from urllib import request
 
+'''
 label_keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '科学', '科研人员', \
             '科学百科生命科学分类', '科学百科健康医疗分类', '科学百科农业科学分类']
 summary_keywords = ['菌', '病毒', '微生物', '传染病', '病原体', '肺炎', '传染', '免疫', '呼吸系统']
+'''
+
+label_keywords = ['病毒', '微生物', '疾病', '医学', '医学术语', '科学', \
+            '科学百科生命科学分类', '科学百科健康医疗分类', \
+                  '科学百科农业科学分类','科学百科疾病症状分类','中药']
+summary_keywords = ['菌', '病毒', '微生物', '传染病', '病原体', '肺炎', '传染', \
+                    '免疫', '呼吸系统',\
+                    '适应症','抗生素','综合征','处方药','非处方药',\
+                    '影像学','造影','医学检查','医学影像','影像检查','医学诊断']
+# ,'临床','症状','综合征'
 
 class Spider(object):
     def __init__(self, worker_num=10, chunk_size=10000, log_interval=600,
@@ -18,6 +29,7 @@ class Spider(object):
         self.log_interval = log_interval
         self.urls = Queue()
         self.results = Queue()
+        self.html_pages = Queue()   # 新增html内容保存队列，用于输出html源代码
         self.url_cache = Set()
         self.name_cache = Set()
         self.black_urls = Set()
@@ -41,7 +53,8 @@ class Spider(object):
 
 
     def start(self, url):
-        new_urls, new_data = self.parser.parse(url)
+        new_urls, new_data, new_html = self.parser.parse(url)
+        self.html_pages.put(new_html)   # 将新获取的html源代码加入html输出队列
         self.results.put(new_data)
         self.url_cache.add(url)
         self.name_cache.add(new_data['name'])
@@ -69,10 +82,9 @@ class Spider(object):
                             line = json.dumps(result, ensure_ascii=False) + '\n'
                             fp.write(line.encode('utf8'))
 
-                            # 保存html源代码
-                            wp = request.urlopen(result['url'])  # 打开连接
-                            content = wp.read()  # 获取页面内容
-                            pages.write(content)
+                            # 输出保存的html源代码
+                            html_page = self.html_pages.get()
+                            pages.write(html_page)
 
                             n += 1
                         else:
@@ -144,7 +156,8 @@ def main(worker_num=20,
          log_interval=600,
          data_dir='data',
          log_dir='log',
-         start_url='https://baike.baidu.com/item/%E5%BE%AE%E7%94%9F%E7%89%A9/147527?fr=aladdin'):
+         start_url= 'https://baike.baidu.com/item/%E4%B8%B4%E5%BA%8A%E5%8C%BB%E5%AD%A6/201903'):
+         #微生物 'https://baike.baidu.com/item/%E5%BE%AE%E7%94%9F%E7%89%A9/147527?fr=aladdin'):
          #start_url='https://baike.baidu.com/item/2019%E6%96%B0%E5%9E%8B%E5%86%A0%E7%8A%B6%E7%97%85%E6%AF%92'):
          #start_url='https://baike.baidu.com/wikitag/taglist?tagId=76625'):
 

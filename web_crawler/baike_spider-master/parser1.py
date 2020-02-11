@@ -70,6 +70,7 @@ class HtmlParser(object):
         for label in labels:
             res_data['labels'].append(label.get_text().strip())
 
+        # get url
         # 对每个实体新增url属性，记录对应百科页面的url
         res_data['url'] = url
 
@@ -139,8 +140,9 @@ class HtmlParser(object):
         soup = self._clean_soup(soup)
         new_urls = self._get_new_urls(soup)
         new_data = self._get_new_data(soup, url)
+        new_html = html
 
-        return new_urls, new_data
+        return new_urls, new_data, new_html
 
 
 if __name__ == '__main__':
@@ -158,6 +160,6 @@ if __name__ == '__main__':
 
     with open('baike.json', 'wb') as fp:
         for url in urls:
-            _, data = parser.parse(url)
+            _, data, _ = parser.parse(url)
             line = json.dumps(data, ensure_ascii=False) + '\n'
             fp.write(line.encode('utf8'))
