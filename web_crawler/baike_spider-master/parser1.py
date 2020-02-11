@@ -29,7 +29,7 @@ class HtmlParser(object):
             new_urls.add(new_full_url)
         return list(new_urls)
     
-    def _get_new_data(self, soup):
+    def _get_new_data(self, soup, url):
         res_data = {}
 
         # get title
@@ -49,7 +49,7 @@ class HtmlParser(object):
 
         # get information
         info_node = soup.find('div', class_="basic-info cmn-clearfix")
-        # TODO key名与spider中调用的不一致，已更改
+        # key名与spider中调用的不一致，已更改
         if info_node is None:
             res_data['info'] = []
         else:
@@ -69,6 +69,9 @@ class HtmlParser(object):
         labels = soup.find_all('span', class_="taglist")
         for label in labels:
             res_data['labels'].append(label.get_text().strip())
+
+        # 对每个实体新增url属性，记录对应百科页面的url
+        res_data['url'] = url
 
         return res_data
 
@@ -135,9 +138,8 @@ class HtmlParser(object):
         soup = BeautifulSoup(html, 'html.parser')
         soup = self._clean_soup(soup)
         new_urls = self._get_new_urls(soup)
-        new_data = self._get_new_data(soup)
-        # 在数据后添加页面url以作记录
-        new_data['url'] = url
+        new_data = self._get_new_data(soup, url)
+
         return new_urls, new_data
 
 
