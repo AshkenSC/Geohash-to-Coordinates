@@ -1,7 +1,11 @@
 # 从HTML页中提取JSON格式的数据
+
 import os
-SOURCE = 'data/lizhiqiang/LIZHIQIANG.xml'
-DEST = 'data/lizhiqiang/'
+from bs4 import BeautifulSoup
+import json
+
+SOURCE = 'data/lizhiqiang/'
+DEST = 'data/lizhiqiang/LIZHIQIANG.json'
 
 # 1. 将XML文件分割为page并单独保存
 def split_page(file_path, dest_path):
@@ -32,6 +36,73 @@ def split_page(file_path, dest_path):
         page_num += 1
 
 
-# 2. 规格化提取每个page的信息
+# 2. 规格化提取每个page的信息，保存为字典
+def get_new_data(self, soup, html):
+    res_data = {}
 
-split_page(SOURCE, DEST)
+    # get title
+    title = soup.find('dd', class_="lemmaWgt-lemmaTitle-title").find('h1').get_text()
+    sub_title = soup.find('dd', class_="lemmaWgt-lemmaTitle-title").find('h2')
+    sub_title = sub_title.get_text() if sub_title is not None else ''
+    res_data['name'] = title.strip() + sub_title.strip()
+
+    # get summary
+    summary_node = soup.find('div', class_="lemma-summary")
+    if summary_node is None:
+        res_data['summary'] = []
+    else:
+        summary_para_nodes = summary_node.find_all('div', class_='para')
+        summary_paras = paras = [p.get_text().replace('\n', '').strip() for p in summary_para_nodes]
+        res_data['summary'] = self._clean_text('\n'.join(summary_paras))
+
+    # get information
+    info_node = soup.find('div', class_="basic-info cmn-clearfix")
+    # key名与spider中调用的不一致，已更改
+    if info_node is None:
+        res_data['info'] = []
+    else:
+        name_nodes = info_node.find_all('dt', class_="basicInfo-item name")
+        value_nodes = info_node.find_all('dd', class_="basicInfo-item value")
+        assert len(name_nodes) == len(value_nodes), 'Number of names and values are not equal.'
+        names = [self._clean_text(name.get_text()).strip() for name in name_nodes]
+        values = [value.get_text().strip() for value in value_nodes]
+        res_data['info'] = dict(zip(names, values))
+
+    # get contents
+    nodes = soup.find_all('div', class_=['para-title level-2', 'para-title level-3', 'para'])
+    res_data['contents'] = self._get_contents(nodes)
+
+    # get labels
+    res_data['labels'] = []
+    labels = soup.find_all('span', class_="taglist")
+    for label in labels:
+        res_data['labels'].append(label.get_text().strip())
+
+    # get url
+    # 对每个实体新增url属性，记录对应百科页面的url
+    res_data['url'] = ''
+
+    # get html
+    res_data['html'] = html
+
+    return res_data
+
+def parse(html_file):
+    html = ''
+    for line in html_file:
+        html += line
+    soup = BeautifulSoup(html, 'html.parser')
+    new_data = get_new_data(soup, html)
+    return new_data
+
+def write_file(source_path, dest_path):
+    output = open(dest_path, 'w', encoding='utf-8')
+    for i in range(1, 5241):
+        html_file = open(os.path.join(source_path, '{}.htm').format(i), 'r', encoding='utf-8')
+        line = json.dumps(parse(html_file), ensure_ascii=False) + '\n'
+        output.write(line)
+        print('写入词条成功:' + str(i))
+    output.close()
+
+# split_page(SOURCE, DEST)
+write_file(SOURCE, DEST)
