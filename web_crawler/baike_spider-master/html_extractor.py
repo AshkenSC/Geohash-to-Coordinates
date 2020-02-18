@@ -3,6 +3,7 @@
 import os
 from bs4 import BeautifulSoup
 import json
+import re
 
 SOURCE = 'data/lizhiqiang/'
 DEST = 'data/lizhiqiang/LIZHIQIANG.json'
@@ -37,7 +38,7 @@ def split_page(file_path, dest_path):
 
 
 # 2. 规格化提取每个page的信息，保存为字典
-def get_new_data(self, soup, html):
+def get_new_data(soup, html):
     res_data = {}
 
     # get title
@@ -53,7 +54,7 @@ def get_new_data(self, soup, html):
     else:
         summary_para_nodes = summary_node.find_all('div', class_='para')
         summary_paras = paras = [p.get_text().replace('\n', '').strip() for p in summary_para_nodes]
-        res_data['summary'] = self._clean_text('\n'.join(summary_paras))
+        res_data['summary'] = _clean_text('\n'.join(summary_paras))
 
     # get information
     info_node = soup.find('div', class_="basic-info cmn-clearfix")
@@ -64,13 +65,13 @@ def get_new_data(self, soup, html):
         name_nodes = info_node.find_all('dt', class_="basicInfo-item name")
         value_nodes = info_node.find_all('dd', class_="basicInfo-item value")
         assert len(name_nodes) == len(value_nodes), 'Number of names and values are not equal.'
-        names = [self._clean_text(name.get_text()).strip() for name in name_nodes]
+        names = [_clean_text(name.get_text()).strip() for name in name_nodes]
         values = [value.get_text().strip() for value in value_nodes]
         res_data['info'] = dict(zip(names, values))
 
     # get contents
     nodes = soup.find_all('div', class_=['para-title level-2', 'para-title level-3', 'para'])
-    res_data['contents'] = self._get_contents(nodes)
+    res_data['contents'] = _get_contents(nodes)
 
     # get labels
     res_data['labels'] = []
@@ -87,10 +88,7 @@ def get_new_data(self, soup, html):
 
     return res_data
 
-def parse(html_file):
-    html = ''
-    for line in html_file:
-        html += line
+def parse(html):
     soup = BeautifulSoup(html, 'html.parser')
     new_data = get_new_data(soup, html)
     return new_data
@@ -98,11 +96,61 @@ def parse(html_file):
 def write_file(source_path, dest_path):
     output = open(dest_path, 'w', encoding='utf-8')
     for i in range(1, 5241):
+        if i == 18:
+            print(i)
         html_file = open(os.path.join(source_path, '{}.htm').format(i), 'r', encoding='utf-8')
-        line = json.dumps(parse(html_file), ensure_ascii=False) + '\n'
+        html = ''
+        for line in html_file:
+            html += line
+        if '您所访问的页面不存在' in html:
+        # 跳过错误页
+            print(str(i) + '页错误，跳过该页')
+            continue
+        line = json.dumps(parse(html), ensure_ascii=False) + '\n'
         output.write(line)
         print('写入词条成功:' + str(i))
     output.close()
+
+def _clean_text(text):
+    text = re.sub(r'(\u3000|\xa0)', '', text)
+    text = re.sub(r'\n+', '\n', text)
+    return text
+
+def _get_contents(nodes):
+    contents, splits = [], []
+    for i, node in enumerate(nodes):
+        if node['class'][-1] == 'level-2':
+            splits.append(i)
+    for i, start in enumerate(splits):
+        end = splits[i + 1] if i < len(splits) - 1 else len(nodes)
+        title = nodes[start].find('h2', class_='title-text').text.strip()
+        has_h3 = any([n['class'][-1] == 'level-3' for n in nodes[start:end]])
+        if not has_h3:
+            paras = []
+            for n in nodes[start:end]:
+                if n['class'][-1] == 'para':
+                    paras.append(_clean_text(n.text.replace('\n', '')).strip())
+            content = '\n'.join(paras)
+            if len(content) > 100:
+                contents.append({'title': title, 'text': content.strip()})
+        else:
+            sub_nodes = nodes[start:end]
+            _splits = []
+            for ii, _node in enumerate(sub_nodes):
+                if _node['class'][-1] == 'level-3':
+                    _splits.append(ii)
+            for ii, _start in enumerate(_splits):
+                _end = _splits[ii + 1] if ii < len(_splits) - 1 else len(sub_nodes)
+                sub_title = sub_nodes[_start].text.strip()
+                _title = '-'.join([title, sub_title])
+                _paras = []
+                for n in sub_nodes[_start:_end]:
+                    if n['class'][-1] == 'para':
+                        _paras.append(_clean_text(n.text.replace('\n', '')).strip())
+                _content = '\n'.join(_paras)
+                if len(_content) > 100:
+                    contents.append({'title': _title, 'text': _content.strip()})
+    return contents
 
 # split_page(SOURCE, DEST)
 write_file(SOURCE, DEST)
