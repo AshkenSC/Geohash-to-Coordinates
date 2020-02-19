@@ -19,6 +19,7 @@ for json_line in source_json_file:
         pattern = re.compile(regex)
         new_link = re.findall(regex, html)
         if new_link is not None:
+            new_link = [entry[1] for entry in new_link]  # 删去列表元素中url其他部分，只保留词条名
             links.append(new_link)
             print(entity['name'].encode('GBK', 'ignore').decode('GBk'), end='')
             print('新增链接')
