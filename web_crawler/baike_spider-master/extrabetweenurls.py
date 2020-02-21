@@ -92,6 +92,34 @@ for subset in sets:
     whole_data = whole_data | subset
 print('集合求解完成')
 
+ngrams = dict()
+
+for i in range(0,50):
+    ngrams[i] = dict()
+
+# 计算ngram
+def calculate(data_str):
+    length = len(data_str)
+    iteration = min(length,50)
+    for i in range(1,iteration+1):
+        for j in range(0,length-i+1):
+            if data_str[j:j+i] not in ngrams[i].keys():
+                ngrams[i][data_str[j:j+i]] = 1
+            else:
+                ngrams[i][data_str[j:j+i]] = ngrams[i][data_str[j:j+i]] +  1
+
+# 导出ngram
+def writegramstofile(dir,ngrams):
+    for i in ngrams.keys():
+        length = str(i)
+        with open(os.path.join(dir, '{}.txt'.format(i)),'w') as f:
+            sorted_dict = sorted(ngrams[i].items(),key=lambda x:x[1], reverse = True)
+            for j in sorted_dict:
+                number = j[0]
+                rel = j[1]
+                line = str(j)
+                f.write(line + '\n')
+
 def have_next(ele):
     try:
         ele.next()
@@ -140,7 +168,7 @@ def findrelation(page_source, title):
     # re.sub(被替换对象的正则表达式，要替换成什么，待处理的字符串）
     PATTERN1 = r'<a target=_blank href="/item/[a-zA-Z0-9%/-]*" data-lemmaid="[0-9]*">[-+/a-zA-Z0-9\u4e00-\u9fa5]*</a>'
     PATTERN2 = r'<a target=_blank href="/item/[a-zA-Z0-9%/-]*">[-+/a-zA-Z0-9\u4e00-\u9fa5]*</a>'
-    print('正在寻找关系，词条：' + title.encode('gbk', 'ignore').decode('gbk'))
+    #print('正在寻找关系，词条：' + title.encode('gbk', 'ignore').decode('gbk'))
     page_source = re.sub(title, '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
     page_source = re.sub('[这其它|他们|它们]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
     html = BeautifulSoup(page_source, 'lxml')
@@ -151,8 +179,6 @@ def findrelation(page_source, title):
     #         url.remove(link)
     texts = []
     for i in range(len(url)-1):
-        if i == 297:    #'以孢子繁殖的陆生性较强的原核生物'
-            print(str(i))
         txt = get_content_between_tables(url[i], url[i+1] )
         reg1 = r'[!。，；：,.?:;\n|、（）<> ]'
         ban = r'百度|百科|隐私|[<>]'   # 筛选头尾禁止出现的关键字
@@ -166,7 +192,9 @@ def findrelation(page_source, title):
                 line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail:' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+ str(txt)
                 #if unquote(str(url[i]['href']).split('/w/')[1]) in whole_data or unquote(str(url[i + 1]['href']).split('/w/')[1]) in whole_data:
                 texts.append(line)
-                print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
+                #print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
+            if title in whole_data:
+                calculate(txt)
     return texts
 
 
@@ -183,7 +211,6 @@ for file in files:
         if 'html' in data.keys():
             page_source = data['html']
             lines = findrelation(page_source, title.encode('gbk', 'ignore').decode('gbk'))
-            print('寻找关系：' + title)
             if title[-1] in '病炎症' and '分类' not in title:
                 fp1.write(title + '\n')
                 if len(lines) > 0:
@@ -222,6 +249,8 @@ for file in files:
                         for i in lines:
                             fp3.write(str(i) + '\n')
             i = f.readline()
+# 写入ngram文件
+writegramstofile(r'relationships/ngrams', ngrams)
 fp1.close()
 fp2.close()
 fp3.close()
