@@ -101,8 +101,8 @@ for i in range(0,50):
 def calculate(data_str):
     length = len(data_str)
     iteration = min(length,50)
-    for i in range(1,iteration+1):
-        for j in range(0,length-i+1):
+    for i in range(0, iteration):
+        for j in range(0, length-i+1):
             if data_str[j:j+i] not in ngrams[i].keys():
                 ngrams[i][data_str[j:j+i]] = 1
             else:
@@ -173,8 +173,8 @@ def findrelation(page_source, title):
     page_source = re.sub('[这其它|他们|它们]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
     html = BeautifulSoup(page_source, 'lxml')
     url = html.find_all('a')    # 未经筛选的URL，包含杂质
+    # URL筛选，去掉所有不是词条链接的URL
     # for link in url:
-    #     # URL筛选，去掉所有不是词条链接的URL
     #     if re.match(PATTERN1, str(link)) is None or re.match(PATTERN2, str(link)) is None:
     #         url.remove(link)
     texts = []
@@ -189,19 +189,25 @@ def findrelation(page_source, title):
             re.match(reg1, txt) is None and \
             url[i].contents != url[i+1].contents:
             if len(url[i].contents)>0 and len(url[i+1].contents)>0:
-                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail:' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+ str(txt)
+                line = unquote(str(url[i].contents[0])) +  ';;;;ll;;;;' + unquote(str(url[i+1].contents[0])) + ';;;;ll;;;;' + str(txt)
                 #if unquote(str(url[i]['href']).split('/w/')[1]) in whole_data or unquote(str(url[i + 1]['href']).split('/w/')[1]) in whole_data:
                 texts.append(line)
                 #print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
             if title in whole_data:
+                if title == '高血钾' and i == 139:
+                    print(title + str(i))
                 calculate(txt)
     return texts
 
 
 files = os.listdir('classified-merged/classified-merged-json/v1')[:-1]
-fp1 = open('relationships/relationship_disease_filter.txt', 'w', encoding='utf-8')
-fp2 = open('relationships/relationship_virus_filter.txt', 'w', encoding='utf-8')
-fp3 = open('relationships/relationship_bacteria_filter.txt', 'w', encoding='utf-8')
+fp1 = open('relationships/relationship_disease_filter1.txt', 'w', encoding='utf-8')
+fp2 = open('relationships/relationship_virus_filter1.txt', 'w', encoding='utf-8')
+fp3 = open('relationships/relationship_bacteria_filter1.txt', 'w', encoding='utf-8')
+fp4 = open('relationships/relationship_drug_filter1.txt','w', encoding='utf-8')
+fp5 = open('relationships/relationship_symptom_filter1.txt','w', encoding='utf-8')
+fp6 = open('relationships/relationship_inspect_filter1.txt','w', encoding='utf-8')
+fp7 = open('relationships/relationship_specialty_filter1.txt','w', encoding='utf-8')
 for file in files:
     with open(os.path.join('classified-merged/classified-merged-json/v1', file), 'r', encoding='utf-8') as f:
         i = f.readline()
@@ -211,46 +217,86 @@ for file in files:
         if 'html' in data.keys():
             page_source = data['html']
             lines = findrelation(page_source, title.encode('gbk', 'ignore').decode('gbk'))
-            if title[-1] in '病炎症' and '分类' not in title:
-                fp1.write(title + '\n')
+            if title in disease_set:
+                #fp1.write(title + '\n')
                 if len(lines) > 0:
                     for i in lines:
                         fp1.write(str(i) + '\n')
-            if title[-2:] == '病毒' and '分类' not in title:
-                fp2.write(title + '\n')
+            if title in virus_set:
+                #fp2.write(title + '\n')
                 if len(lines) > 0:
                     for i in lines:
                         fp2.write(str(i) + '\n')
-            if title[-1] == '菌' and '分类' not in title:
-                fp3.write(title + '\n')
+            if title in bacteria_set:
+                #fp3.write(title + '\n')
                 if len(lines) > 0:
                     for i in lines:
                         fp3.write(str(i) + '\n')
+            if title in drug_set:
+                #fp4.write(title + '\n')
+                if len(lines) > 0:
+                    for i in lines:
+                        fp4.write(str(i) + '\n')
+            if title in symptom_set:
+                #fp4.write(title + '\n')
+                if len(lines) > 0:
+                    for i in lines:
+                        fp5.write(str(i) + '\n')
+            if title in inspect_set:
+                #fp4.write(title + '\n')
+                if len(lines) > 0:
+                    for i in lines:
+                        fp6.write(str(i) + '\n')
+            if title in specialty_set:
+                #fp4.write(title + '\n')
+                if len(lines) > 0:
+                    for i in lines:
+                        fp7.write(str(i) + '\n')
             i = f.readline()
-        while (i != ''):
+        while i != '':
             data = json.loads(i, strict=False)
             title = data['name']
             if 'html' in data.keys():
                 page_source = data['html']
                 lines = findrelation(page_source, title)
-                if title[-1] in '病炎症' and '分类' not in title:
-                    fp1.write(title + '\n')
+                if title in disease_set:
+                    #fp1.write(title + '\n')
                     if len(lines) > 0:
                         for i in lines:
                             fp1.write(str(i) + '\n')
-                if title[-2:] == '病毒' and '分类' not in title:
-                    fp2.write(title + '\n')
+                if title in virus_set:
+                    #fp2.write(title + '\n')
                     if len(lines) > 0:
                         for i in lines:
                             fp2.write(str(i) + '\n')
-                if title[-1] == '菌' and '分类' not in title:
-                    fp3.write(title + '\n')
+                if title in bacteria_set:
+                    #fp3.write(title + '\n')
                     if len(lines) > 0:
                         for i in lines:
                             fp3.write(str(i) + '\n')
+                if title in drug_set:
+                    # fp4.write(title + '\n')
+                    if len(lines) > 0:
+                        for i in lines:
+                            fp4.write(str(i) + '\n')
+                if title in symptom_set:
+                    # fp4.write(title + '\n')
+                    if len(lines) > 0:
+                        for i in lines:
+                            fp5.write(str(i) + '\n')
+                if title in inspect_set:
+                    # fp4.write(title + '\n')
+                    if len(lines) > 0:
+                        for i in lines:
+                            fp6.write(str(i) + '\n')
+                if title in specialty_set:
+                    # fp4.write(title + '\n')
+                    if len(lines) > 0:
+                        for i in lines:
+                            fp7.write(str(i) + '\n')
             i = f.readline()
 # 写入ngram文件
-writegramstofile(r'relationships/ngrams', ngrams)
+#writegramstofile(r'relationships/ngrams', ngrams)
 fp1.close()
 fp2.close()
 fp3.close()
