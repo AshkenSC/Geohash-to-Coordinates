@@ -142,7 +142,7 @@ def findrelation(page_source, title):
     PATTERN2 = r'<a target=_blank href="/item/[a-zA-Z0-9%/-]*">[-+/a-zA-Z0-9\u4e00-\u9fa5]*</a>'
     print('正在寻找关系，词条：' + title.encode('gbk', 'ignore').decode('gbk'))
     page_source = re.sub(title, '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
-    page_source = re.sub('[这其它]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
+    page_source = re.sub('[这其它|他们|它们]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
     html = BeautifulSoup(page_source, 'lxml')
     url = html.find_all('a')    # 未经筛选的URL，包含杂质
     # for link in url:
@@ -154,11 +154,12 @@ def findrelation(page_source, title):
         if i == 297:    #'以孢子繁殖的陆生性较强的原核生物'
             print(str(i))
         txt = get_content_between_tables(url[i], url[i+1] )
-        reg1 = r'[!。； ：,.?:;\n]'
+        reg1 = r'[!。；：,.?:;\n|、（） ]'
+        ban = r'[百度|百科]'
         pattern = re.compile(reg1)
-        if len(pattern.findall(txt)) < 1:
+        if len(pattern.findall(txt)) < 2 and len(pattern.findall(ban)) < 1 and txt != '' and re.match(reg1, txt) is None:
             if len(url[i].contents)>0 and len(url[i+1].contents)>0:
-                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+  str(txt)
+                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail:' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+  str(txt)
                 #if unquote(str(url[i]['href']).split('/w/')[1]) in whole_data or unquote(str(url[i + 1]['href']).split('/w/')[1]) in whole_data:
                 texts.append(line)
                 print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
