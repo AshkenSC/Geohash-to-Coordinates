@@ -137,24 +137,31 @@ def get_content_between_tables(pre, nxt):
     return txt
 
 def findrelation(page_source, title):
-    # re.sub(正则表达式，要替换成什么，待处理的字符串）
+    # re.sub(被替换对象的正则表达式，要替换成什么，待处理的字符串）
+    PATTERN1 = r'<a target=_blank href="/item/[a-zA-Z0-9%/-]*" data-lemmaid="[0-9]*">[-+/a-zA-Z0-9\u4e00-\u9fa5]*</a>'
+    PATTERN2 = r'<a target=_blank href="/item/[a-zA-Z0-9%/-]*">[-+/a-zA-Z0-9\u4e00-\u9fa5]*</a>'
+    print('正在寻找关系，词条：' + title.encode('gbk', 'ignore').decode('gbk'))
     page_source = re.sub(title, '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
-    page_source = re.sub('[这]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
+    page_source = re.sub('[这其它]', '<a href="/w/' + title+ '" >'+ title + '</a>', page_source)
     html = BeautifulSoup(page_source, 'lxml')
-    url = html.find_all('a')
+    url = html.find_all('a')    # 未经筛选的URL，包含杂质
+    # for link in url:
+    #     # URL筛选，去掉所有不是词条链接的URL
+    #     if re.match(PATTERN1, str(link)) is None or re.match(PATTERN2, str(link)) is None:
+    #         url.remove(link)
     texts = []
     for i in range(len(url)-1):
+        if i == 297:    #'以孢子繁殖的陆生性较强的原核生物'
+            print(str(i))
         txt = get_content_between_tables(url[i], url[i+1] )
-        reg1 = r'[!。；， ：,.?:;\n]'
+        reg1 = r'[!。； ：,.?:;\n]'
         pattern = re.compile(reg1)
         if len(pattern.findall(txt)) < 1:
-            try:
-                line = 'head:' +  unquote(str(url[i]['title'])) +  '\t'+ '\t'+'tail' + unquote(str(url[i+1]['title'])) + '\t'+ '\t'+'rel:'+  str(txt)
+            if len(url[i].contents)>0 and len(url[i+1].contents)>0:
+                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+  str(txt)
                 #if unquote(str(url[i]['href']).split('/w/')[1]) in whole_data or unquote(str(url[i + 1]['href']).split('/w/')[1]) in whole_data:
                 texts.append(line)
                 print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
-            except:
-                continue
     return texts
 
 
