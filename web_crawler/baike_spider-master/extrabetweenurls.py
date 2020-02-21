@@ -154,12 +154,16 @@ def findrelation(page_source, title):
         if i == 297:    #'以孢子繁殖的陆生性较强的原核生物'
             print(str(i))
         txt = get_content_between_tables(url[i], url[i+1] )
-        reg1 = r'[!。；：,.?:;\n|、（） ]'
-        ban = r'[百度|百科]'
+        reg1 = r'[!。，；：,.?:;\n|、（）<> ]'
+        ban = r'百度|百科|隐私|[<>]'   # 筛选头尾禁止出现的关键字
         pattern = re.compile(reg1)
-        if len(pattern.findall(txt)) < 2 and len(pattern.findall(ban)) < 1 and txt != '' and re.match(reg1, txt) is None:
+        if len(pattern.findall(txt)) < 1 and \
+            len(re.findall(ban, str(url[i].contents))) < 1 and len(re.findall(ban, str(url[i+1].contents))) < 1 and\
+            txt != '' and \
+            re.match(reg1, txt) is None and \
+            url[i].contents != url[i+1].contents:
             if len(url[i].contents)>0 and len(url[i+1].contents)>0:
-                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail:' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+  str(txt)
+                line = 'head:' +  unquote(str(url[i].contents[0])) +  '\t'+ '\t'+'tail:' + unquote(str(url[i+1].contents[0])) + '\t'+ '\t'+'rel:'+ str(txt)
                 #if unquote(str(url[i]['href']).split('/w/')[1]) in whole_data or unquote(str(url[i + 1]['href']).split('/w/')[1]) in whole_data:
                 texts.append(line)
                 print('找到关系：' + line.encode('gbk', 'ignore').decode('gbk'))
