@@ -99,13 +99,42 @@ def get_triple_category(name):
             return category_name[i]
 
 # 导入词条名集合
-disease = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_disease.txt', 'r', encoding='utf-8')
-drug = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_drug.txt', 'r', encoding='utf-8')
-bacteria = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_bacteria.txt', 'r', encoding='utf-8')
-virus = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_virus.txt', 'r', encoding='utf-8')
-symptom = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_symptom.txt', 'r', encoding='utf-8')
-inspect = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_inspect.txt', 'r', encoding='utf-8')
-specialty = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_speciaty.txt', 'r', encoding='utf-8')
+def load_entity_names():
+    pass
+    disease = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_disease.txt', 'r', encoding='utf-8')
+    drug = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_drug.txt', 'r', encoding='utf-8')
+    bacteria = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_bacteria.txt', 'r', encoding='utf-8')
+    virus = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_virus.txt', 'r', encoding='utf-8')
+    symptom = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_symptom.txt', 'r', encoding='utf-8')
+    inspect = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_inspect.txt', 'r', encoding='utf-8')
+    specialty = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_speciaty.txt', 'r', encoding='utf-8')
+
+    for line in disease:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        disease_set.add(line.strip('\n'))
+    for line in drug:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        drug_set.add(line.strip('\n'))
+    for line in bacteria:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        bacteria_set.add(line.strip('\n'))
+    for line in virus:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        virus_set.add(line.strip('\n'))
+    for line in symptom:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        symptom_set.add(line.strip('\n'))
+    for line in inspect:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        inspect_set.add(line.strip('\n'))
+    for line in specialty:
+        print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        specialty_set.add(line.strip('\n'))
+
+    disease.close()
+    drug.close()
+    bacteria.close()
+    virus.close()
 
 disease_set = set()
 drug_set = set()
@@ -116,28 +145,8 @@ inspect_set = set()
 specialty_set = set()
 sets = [disease_set, drug_set, bacteria_set, virus_set, symptom_set, inspect_set, specialty_set]
 
-for line in disease:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    disease_set.add(line.strip('\n'))
-for line in drug:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    drug_set.add(line.strip('\n'))
-for line in bacteria:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    bacteria_set.add(line.strip('\n'))
-for line in virus:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    virus_set.add(line.strip('\n'))
-for line in symptom:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    symptom_set.add(line.strip('\n'))
-for line in inspect:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    inspect_set.add(line.strip('\n'))
-for line in specialty:
-    print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
-    specialty_set.add(line.strip('\n'))
-
+# 导入词条名集合
+load_entity_names()
 
 # 导入关键字数组
 keywords = [['可医治', ('治疗','抑制','用于','预防')],
