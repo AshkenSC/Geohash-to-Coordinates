@@ -145,14 +145,14 @@ inspect_set = set()
 specialty_set = set()
 sets = [disease_set, drug_set, bacteria_set, virus_set, symptom_set, inspect_set, specialty_set]
 
-# 导入词条名集合
-load_entity_names()
-
-# 导入关键字数组
+# 设置过滤关键字数组
 keywords = [['可医治', ('治疗','抑制','用于','预防')],
             ['推荐药物', ('使用')],
             ['引起', ('引起', '导致', '所致', '由于', '原因', '刺激', '感染', '因为', '产生')],
             ['相关疾病', '相关症状', ('伴有', '常有', '典型', '并发', '继发', '出现', '引起', '导致', '常伴有', '表现为', '并发症')]]
+
+# 导入词条名集合
+load_entity_names()
 
 # 导入文件，对calculate行判断其类别；对三元组行获取其内容。
 data_source = open(r'F:\PythonProjects\ngrams_baidu\ngrams_addline_virus\detail\3_detail.txt', 'r', encoding='utf-8')
@@ -160,6 +160,8 @@ valid_triples = list()          # 用于存储合法的待输出triple
 for i in range(4):
     valid_triples.append(list())
 
+# 检查三元组是否符合i类的各种条件，head，tail是否符合规定类别。如果符合类别，则重命名rel后输出
+# 对相似疾病or相似症状，必须根据head和tail的类别进行判断是哪个，再做重命名
 isReadingTriple = False
 for line in data_source:
     if 'calculate' in line:
@@ -167,8 +169,8 @@ for line in data_source:
             # 首先看calculate后的词条是否包含关键字
             if find_keyword(line, keywords[i][-1]):
                 # 若包含，则预设其属下三元组的分类
+                print(line.encode('GBK','ignore').decode('GBk'))
                 current_category = i
-                #print('category 包含下列关键字：' + repr(keywords[i][-1]).encode('GBK','ignore').decode('GBk'))
                 isReadingTriple = True
                 break
             else:
@@ -178,12 +180,9 @@ for line in data_source:
         if is_valid(new_triple, current_category):
             new_triple = rename_triple(new_triple, current_category)
             valid_triples[current_category].append(new_triple)
-            print('发现有效三元组：', end='')
-            print(repr(new_triple).encode('GBK','ignore').decode('GBk'))
-
+            #print('发现有效三元组：', end='')
+            #print(repr(new_triple).encode('GBK','ignore').decode('GBk'))
 data_source.close()
-# 检查三元组是否符合i类的各种条件，head，tail是否符合规定类别。如果符合类别，则重命名rel后输出
-# 对相似疾病or相似症状，必须根据head和tail的类别进行判断是哪个，再做重命名。
 
 # 结果写入文件
 # 用函数find_category 检查head和tail属于哪个类别
