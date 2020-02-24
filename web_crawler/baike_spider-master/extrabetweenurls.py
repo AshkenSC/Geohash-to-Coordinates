@@ -1,3 +1,4 @@
+# 计算ngram
 
 import requests
 from bs4 import BeautifulSoup
@@ -7,45 +8,6 @@ import os
 import re
 import json
 from urllib.parse import urljoin, quote, unquote
-
-'''
-data1 = set()
-data2 = set()
-data3 = set()
-
-with open('E:\Monash\Coronavirus\crawler\seperateclass\医学百科_疾病jiao.txt', 'r') as f:
-    i = f.readline()
-    i = i.split('\n')[0]
-    data1.add(i)
-    i = f.readline()
-    while(i != ''):
-        i = i.split('\n')[0]
-        data1.add(i)
-        i = f.readline()
-
-with open('E:\Monash\Coronavirus\crawler\seperateclass\医学百科_病毒jiao.txt', 'r') as f:
-    i = f.readline()
-    i = i.split('\n')[0]
-    data2.add(i)
-    i = f.readline()
-    while(i != ''):
-        i = i.split('\n')[0]
-        data2.add(i)
-        i = f.readline()
-
-with open('E:\Monash\Coronavirus\crawler\firstrounddata\医学百科_细菌jiao', 'r') as f:
-    i = f.readline()
-    i = i.split('\n')[0]
-    data3.add(i)
-    i = f.readline()
-    while(i != ''):
-        i = i.split('\n')[0]
-        data3.add(i)
-        i = f.readline()
-
-
-wholedata = data1 | data2 | data3
-'''
 
 # 整合所有词条的名称并且取交集
 disease = open('classified-merged/pure_names/pure_names_multisource/disease.txt', 'r', encoding='utf-8')
@@ -112,7 +74,7 @@ def calculate(data_str):
 def writegramstofile(dir,ngrams):
     for i in ngrams.keys():
         length = str(i)
-        with open(os.path.join(dir, '{}.txt'.format(i)),'w') as f:
+        with open(os.path.join(dir, '{}.txt'.format(i)),'w', encoding='utf-8') as f:
             sorted_dict = sorted(ngrams[i].items(),key=lambda x:x[1], reverse = True)
             for j in sorted_dict:
                 number = j[0]
@@ -296,7 +258,7 @@ for file in files:
                             fp7.write(str(i) + '\n')
             i = f.readline()
 # 写入ngram文件
-#writegramstofile(r'relationships/ngrams', ngrams)
+writegramstofile(r'relationships\\ngrams', ngrams)
 fp1.close()
 fp2.close()
 fp3.close()
