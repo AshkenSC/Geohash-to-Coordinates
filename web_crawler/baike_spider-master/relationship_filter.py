@@ -1,4 +1,4 @@
-# 将获取到的关系进行筛选
+# 根据head和tail的属性，以及关系relationship的关键字，将获取到的关系进行筛选
 
 '''
 rel == 治疗:   归为 可医治
@@ -37,6 +37,7 @@ rel == 相似疾病，相似症状: 统一叫相关症状or相关疾病（需要
 head类别;;;;ll;;;;tail类别:head;;;;ll;;;;rel;;;;ll;;;;tail
 '''
 import re
+import json
 
 # 检查calculate行，根据其找到的关键字属于哪个类别i，将其下的三元组分到那个类别i
 def find_keyword(line, word_list):
@@ -47,10 +48,11 @@ def find_keyword(line, word_list):
 
 # 读取三元组
 def parse_line(line):
-    head = re.search(r'(head:)([\u4e00-\u9fa5]*)', line).group(2)
-    tail = re.search(r'(tail:)([\u4e00-\u9fa5]*)', line).group(2)
-    rel = re.search(r'(rel:)([\u4e00-\u9fa5]*)', line).group(2)
-    triple = [head, tail, rel]
+    # head = re.search(r'(head:)([\u4e00-\u9fa5]*)', line).group(2)
+    # tail = re.search(r'(tail:)([\u4e00-\u9fa5]*)', line).group(2)
+    # rel = re.search(r'(rel:)([\u4e00-\u9fa5]*)', line).group(2)
+    # triple = [head, tail, rel]
+    triple = line.split(';;;;ll;;;;')
     return triple
 
 # 判断三元组是否合法
@@ -100,14 +102,19 @@ def get_triple_category(name):
 
 # 导入词条名集合
 def load_entity_names():
-    pass
-    disease = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_disease.txt', 'r', encoding='utf-8')
-    drug = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_drug.txt', 'r', encoding='utf-8')
-    bacteria = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_bacteria.txt', 'r', encoding='utf-8')
-    virus = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_virus.txt', 'r', encoding='utf-8')
-    symptom = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_symptom.txt', 'r', encoding='utf-8')
-    inspect = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_inspect.txt', 'r', encoding='utf-8')
-    specialty = open(r'F:\PythonProjects\ngrams_baidu\entity_names\new_speciaty.txt', 'r', encoding='utf-8')
+    disease = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_disease.txt', 'r', encoding='utf-8')
+    drug = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_drug.txt', 'r', encoding='utf-8')
+    bacteria = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_bacteria.txt', 'r', encoding='utf-8')
+    virus = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_virus.txt', 'r', encoding='utf-8')
+    symptom = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_symptom.txt', 'r', encoding='utf-8')
+    inspect = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_inspect.txt', 'r', encoding='utf-8')
+    specialty = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_speciaty.txt', 'r', encoding='utf-8')
+
+    # 载入别名文件，将别名放入实体名库中
+    alias_bacteria = open('alias/alias_bacteria.json', 'r', encoding='utf-8')
+    alias_disease = open('alias/alias_disease.json', 'r', encoding='utf-8')
+    alias_drug = open('alias/alias_drug.json', 'r', encoding='utf-8')
+    alias_virus = open('alias/alias_virus.json', 'r', encoding='utf-8')
 
     for line in disease:
         print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
@@ -130,6 +137,25 @@ def load_entity_names():
     for line in specialty:
         print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
         specialty_set.add(line.strip('\n'))
+
+    # 载入别名
+    alias_bacteria_json = json.load(alias_bacteria)
+    for alias_list in alias_bacteria_json.values():
+        for alias in alias_list:
+            bacteria_set.add(alias)
+    alias_disease_json = json.load(alias_disease)
+    for alias_list in alias_disease_json.values():
+        for alias in alias_list:
+            disease_set.add(alias)
+    alias_drug_json = json.load(alias_drug)
+    for alias_list in alias_drug_json.values():
+        for alias in alias_list:
+            drug_set.add(alias)
+    alias_virus_json = json.load(alias_virus)
+    for alias_list in alias_virus_json.values():
+        for alias in alias_list:
+            virus_set.add(alias)
+
 
     disease.close()
     drug.close()
@@ -155,7 +181,7 @@ keywords = [['可医治', ('治疗','抑制','用于','预防')],
 load_entity_names()
 
 # 导入文件，对calculate行判断其类别；对三元组行获取其内容。
-data_source = open(r'F:\PythonProjects\ngrams_baidu\ngrams_addline_virus\detail\3_detail.txt', 'r', encoding='utf-8')
+data_source = open(r'ngrams_addline/3_alias2/virus/detail/3_detail.txt', 'r', encoding='utf-8')
 valid_triples = list()          # 用于存储合法的待输出triple
 for i in range(4):
     valid_triples.append(list())
@@ -180,19 +206,24 @@ for line in data_source:
         if is_valid(new_triple, current_category):
             new_triple = rename_triple(new_triple, current_category)
             valid_triples[current_category].append(new_triple)
-            #print('发现有效三元组：', end='')
-            #print(repr(new_triple).encode('GBK','ignore').decode('GBk'))
+            print('发现有效三元组：', end='')
+            print(repr(new_triple).encode('GBK','ignore').decode('GBk'))
 data_source.close()
 
 # 结果写入文件
 # 用函数find_category 检查head和tail属于哪个类别
-output = open(r'F:\PythonProjects\ngrams_baidu\filtered.txt', 'a+', encoding='utf-8')
+# 对输出的triple存入dedup_triple_list用于进行去重
+output = open(r'ngrams_addline/3_alias2/virus_relation_triples.txt', 'w', encoding='utf-8')
+dedup_triple_list = set()
 for sublist in valid_triples:
     for triple in sublist:
-        # 显示结果
-        print('正在保存：' + repr(triple).encode('GBK','ignore').decode('GBk'))
-        # 输出head和tail的类别
-        output.write(get_triple_category(triple[0]) + ';;;;ll;;;;' + get_triple_category(triple[1]) + ':')
-        # 输出三元组
-        output.write(triple[0] + ';;;;ll;;;;' + triple[2] + ';;;;ll;;;;' + triple[1] + '\n')
+        if tuple(triple) not in dedup_triple_list:
+            # 将当前三元组存入去重列表里
+            dedup_triple_list.add(tuple(triple))
+            # 显示结果
+            print('正在保存：' + repr(triple).encode('GBK','ignore').decode('GBk'))
+            # 输出head和tail的类别
+            output.write(get_triple_category(triple[0]) + ';;;;ll;;;;' + get_triple_category(triple[1]) + ':')
+            # 输出三元组
+            output.write(triple[0] + ';;;;ll;;;;' + triple[2] + ';;;;ll;;;;' + triple[1] + '\n')
 output.close()
