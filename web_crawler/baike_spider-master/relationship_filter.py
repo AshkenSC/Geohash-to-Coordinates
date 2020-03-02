@@ -1,32 +1,53 @@
 # 根据head和tail的属性，以及关系relationship的关键字，将获取到的关系进行筛选
+# 修改词条名集合load_entity_names，修改datasource，修改output
+DATA_SOURCE = r'ngrams_addline/3_alias2/inspect/detail/3_detail.txt'
+OUTPUT = r'ngrams_addline/3_alias2/inspect_relation_triples_v2.txt'
 
 '''
 rel == 治疗:   归为 可医治
-
-治疗，抑制，用于，预防， head == 药物/手术，tail ==症状或疾病，
 治疗，head == 细菌，tail == 症状（如肉毒杆菌治疗肌肉痉挛）
 
 rel == 推荐药物 就叫推荐药物
 使用， head == 疾病，tail == 药物
+（反过来）抑制，治疗，用于，预防 head== 药物，tail== 疾病，症状
 
 rel == 引起: 就叫引起
 
 引起，起的，head == 细菌/病因/病毒/疾病, tail == 症状/疾病/细菌（细菌引起细菌）
 导致，所致head == 各种原因，tail == 疾病，症状
-由于，原因，head == 疾病，tail == 病因
+（反过来）由于，原因，head == 疾病，tail == 病因
 可引，head == 疾病，tail == 症状，head == 原因，tail == 疾病
 刺激，head == 病因，tail == 疾病/症状
 感染，head == 细菌，病毒，tail == 疾病
 因为，head == 疾病，tail == 病毒
 产生，head == 病毒，tail == 症状
-
+造成, 而出现
 
 rel == 相似疾病，相似症状: 统一叫相关症状or相关疾病（需要判断head tail分类确定）
 
 伴有，常有，典型，并发，继发，出现
- 引起，导致，常伴有，表现为，并发症
+ 引起，导致，常伴有，表现为，并发症 是一种，最常见
 
  出现以上关键词，headtail同为疾病或症状
+
+rel == 检测:
+
+检查（可发现），head == 检查项目，tail == 疾病/症状
+检测，head == 检查项目，tail == 病毒/药物（抗体类）
+诊断，head == 检查项目，tail == 病毒
+
+rel == 病症:
+
+患者，head == 疾病，tail == 症状
+主要，表现，不同程度，head == 疾病，tail == 症状
+伴有，常有，典型，并发，继发，出现， head == 疾病，tail == 症状
+临床表现
+表现为，症状为，head== 疾病，tail==症状
+（反过来）多见于，多发生，可见于，为特征 head== 症状，tail==疾病
+
+Rel== 检查：
+检查，检测 head==医学专科，tail==疾病
+
 '''
 
 '''
@@ -76,21 +97,56 @@ def is_valid(triple, category):
         if (triple[0] in disease_set and triple[1] in disease_set) or\
                 (triple[0] in symptom_set and triple[1] in symptom_set):
             return True
+    elif category == 4:
+    # rel检测，要求head为检查项目，tail为疾病，症状，病毒，细菌，药物
+        if triple[0] in inspect_set and triple[1] in (disease_set|symptom_set|virus_set|bacteria_set|drug_set):
+            return True
+    elif category == 5:
+    # rel病症，要求head为疾病，tail为症状；或head为症状，tail为疾病
+        if (triple[0] in disease_set and triple[1] in symptom_set) or (triple[0] in symptom_set and triple[1] in disease_set):
+            return True
+    elif category == 6:
+    # rel检查，要求head为医学专科，tail为疾病，症状，病毒，细菌
+        if triple[0] in specialty_set and triple[1] in (disease_set|symptom_set|virus_set|bacteria_set):
+            return True
     return False
 
 # 根据类别不同，重命名三元组的rel部分
+# 对部分特殊三元组的头尾进行交换，使其符合逻辑
+# 0-治疗，1-推荐药物，2-引起，3-相关疾病or相关症状，4-检测，5-病症，6-检查
 def rename_triple(triple, category):
     if category == 0:
         triple[2] = '可医治'
     elif category == 1:
+        # 翻转头尾：抑制，治疗，用于，预防
+        if re.search('(抑制)|(治疗)|(用于)|(预防)', triple[2]) is not None:
+            temp = triple[1]
+            triple[1] = triple[0]
+            triple[0] = temp
         triple[2] = '推荐药物'
     elif category == 2:
+        # 翻转头尾：由于，原因
+        if re.search('由于|原因', triple[2]) is not None:
+            temp = triple[1]
+            triple[1] = triple[0]
+            triple[0] = temp
         triple[2] = '引起'
     elif category == 3:
         if triple[0] in disease_set:
             triple[2] = '相关疾病'
         else:
             triple[2] = '相关症状'
+    elif category == 4:
+        triple[2] = '检测'
+    elif category == 5:
+        # 翻转头尾：多见于，多发生，可见于，为特征
+        if re.search('多见于|多发生|可见于|为特征', triple[2]) is not None:
+            temp = triple[1]
+            triple[1] = triple[0]
+            triple[0] = temp
+        triple[2] = '病症'
+    elif category == 6:
+        triple[3] = '检查'
     return triple
 
 # 获取实体类别，返回类别名字符串
@@ -156,7 +212,6 @@ def load_entity_names():
         for alias in alias_list:
             virus_set.add(alias)
 
-
     disease.close()
     drug.close()
     bacteria.close()
@@ -172,18 +227,23 @@ specialty_set = set()
 sets = [disease_set, drug_set, bacteria_set, virus_set, symptom_set, inspect_set, specialty_set]
 
 # 设置过滤关键字数组
-keywords = [['可医治', ('治疗','抑制','用于','预防')],
-            ['推荐药物', ('使用')],
-            ['引起', ('引起', '导致', '所致', '由于', '原因', '刺激', '感染', '因为', '产生')],
-            ['相关疾病', '相关症状', ('伴有', '常有', '典型', '并发', '继发', '出现', '引起', '导致', '常伴有', '表现为', '并发症')]]
+# 0-治疗，1-推荐药物，2-引起，3-相关疾病or相关症状，4-检测，5-病症，6-检查
+keywords = [['可医治', ('治疗')],
+            ['推荐药物', ('使用', '抑制', '治疗', '用于', '预防')],
+            ['引起', ('引起', '导致', '所致', '由于', '原因', '刺激', '感染', '因为', '产生', '造成', '而出现', '是一种', '最常见')],
+            ['相关疾病', '相关症状', ('伴有', '常有', '典型', '并发', '继发', '出现', '引起', '导致', '常伴有', '表现为', '并发症')],
+            ['检测', ('检查', '可发现', '检测', '诊断')],
+            ['病症', ('患者', '主要', '表现', '不同程度', '伴有', '常有', '典型', '并发', '继发', '出现', '临床表现', '表现为', '症状为', '多见于', '多发生', '可见于', '为特征')],
+            ['检查', ('检查', '检测')],
+            ]
 
 # 导入词条名集合
 load_entity_names()
 
 # 导入文件，对calculate行判断其类别；对三元组行获取其内容。
-data_source = open(r'ngrams_addline/3_alias2/virus/detail/3_detail.txt', 'r', encoding='utf-8')
+data_source = open(DATA_SOURCE, 'r', encoding='utf-8')
 valid_triples = list()          # 用于存储合法的待输出triple
-for i in range(4):
+for i in range(7):
     valid_triples.append(list())
 
 # 检查三元组是否符合i类的各种条件，head，tail是否符合规定类别。如果符合类别，则重命名rel后输出
@@ -213,7 +273,7 @@ data_source.close()
 # 结果写入文件
 # 用函数find_category 检查head和tail属于哪个类别
 # 对输出的triple存入dedup_triple_list用于进行去重
-output = open(r'ngrams_addline/3_alias2/virus_relation_triples.txt', 'w', encoding='utf-8')
+output = open(OUTPUT, 'w', encoding='utf-8')
 dedup_triple_list = set()
 for sublist in valid_triples:
     for triple in sublist:
