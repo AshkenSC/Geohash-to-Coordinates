@@ -169,7 +169,7 @@ for json_line in source:
     if category != -1:
         # 若条目不在现有数据里，将其导入
         if is_existed(line['name'], old_ctg_table) is False:
-            files[category].write(json_line + '\n')
+            files[category].write(json_line)
             print('向' + category + '导入' + line['name'].encode('gbk', 'ignore').decode('gbk'))
         else:
             print('条目 ' + line['name'].encode('gbk', 'ignore').decode('gbk') + ' 已存在')
