@@ -5,13 +5,14 @@ from bs4 import BeautifulSoup
 import json
 import re
 
-SOURCE = 'data/lizhiqiang/'
-DEST = 'data/lizhiqiang/LIZHIQIANG.json'
+SOURCE = r"F:/Projects/corona/hudong_data/xml/entity_page"
+DEST = r'F:/Projects/corona/hudong_data/html/bacteria_disease_drug_virus'
 
 # 1. 将XML文件分割为page并单独保存
+
 def split_page(file_path, dest_path):
     pages = list()
-    xml = open(file_path,'r', encoding='utf-8')
+    xml = open(file_path + r'\entity_pages_12.xml','r', encoding='utf-8')
     isReadingPage = False
     page_num = 1
     for line in xml:
@@ -27,7 +28,7 @@ def split_page(file_path, dest_path):
             page_num += 1
     xml.close()
 
-    page_num = 1
+    page_num = 81844
     for page in pages:
         f = open(os.path.join(dest_path, '{}.htm'.format(page_num)), 'w', encoding='utf-8')
         for line in page:
@@ -35,7 +36,7 @@ def split_page(file_path, dest_path):
         f.close()
         print('第{}页面保存完毕'.format(page_num))
         page_num += 1
-
+    return page_num
 
 # 2. 规格化提取每个page的信息，保存为字典
 def get_new_data(soup, html):
@@ -93,11 +94,12 @@ def parse(html):
     new_data = get_new_data(soup, html)
     return new_data
 
-def write_file(source_path, dest_path):
+def write_file(source_path, dest_path, page_num):
     output = open(dest_path, 'w', encoding='utf-8')
-    for i in range(1, 5241):
-        if i == 18:
+    for i in range(1, page_num):
+        if i == 26:
             print(i)
+            continue
         html_file = open(os.path.join(source_path, '{}.htm').format(i), 'r', encoding='utf-8')
         html = ''
         for line in html_file:
@@ -152,5 +154,5 @@ def _get_contents(nodes):
                     contents.append({'title': _title, 'text': _content.strip()})
     return contents
 
-# split_page(SOURCE, DEST)
-write_file(SOURCE, DEST)
+page_num = split_page(SOURCE, DEST)
+#write_file(SOURCE, DEST, page_num)
