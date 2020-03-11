@@ -151,7 +151,36 @@ def get_content_between_tables(pre, nxt):
     return txt
 
 def head_tail_strip(head, tail):
-    pass
+    # 写函数删除head tail中一些头尾词，例如Special: Template: （页面不存在）
+
+    # 删除页面不存在
+    if re.match(r'(.*)(（页面不存在）)', head) is not None:
+        head = re.match(r'(.*)(（页面不存在）)', head)[1]
+    if re.match(r'(.*)(（页面不存在）)', tail) is not None:
+        tail = re.match(r'(.*)(（页面不存在）)', tail)[1]
+
+    # 删除Special:
+    if re.match(r'(Special:)(.*)', head) is not None:
+        head = re.match(r'(Special:)(.*)', head)[2]
+    if re.match(r'(Special:)(.*))', tail) is not None:
+        tail = re.match(r'(Special:)(.*))', tail)[2]
+
+    # 删除Template:
+    if re.match(r'(Template:)(.*)', head) is not None:
+        head = re.match(r'(Template:)(.*)', head)[2]
+    if re.match(r'(Template:)(.*))', tail) is not None:
+        tail = re.match(r'(Template:)(.*))', tail)[2]
+
+    # 删除尾部括号注释
+    if re.match(r'(.*)([(].*[)])', head) is not None:
+        head = re.match(r'(.*)([(].*[)])', head)[1]
+    if re.match(r'(.*)([(].*[)])', tail) is not None:
+        tail = re.match(r'(.*)([(].*[)])', tail)[1]
+
+    # 繁体转换
+    c = opencc.OpenCC('t2s')
+    head = c.convert(head)
+    tail = c.convert(tail)
 
     return head, tail
 
