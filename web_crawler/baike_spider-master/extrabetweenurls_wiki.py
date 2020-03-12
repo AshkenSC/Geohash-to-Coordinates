@@ -162,14 +162,20 @@ def head_tail_strip(head, tail):
     # 删除Special:
     if re.match(r'(Special:)(.*)', head) is not None:
         head = re.match(r'(Special:)(.*)', head)[2]
-    if re.match(r'(Special:)(.*))', tail) is not None:
-        tail = re.match(r'(Special:)(.*))', tail)[2]
+    if re.match(r'(Special:)(.*)', tail) is not None:
+        tail = re.match(r'(Special:)(.*)', tail)[2]
 
     # 删除Template:
     if re.match(r'(Template:)(.*)', head) is not None:
         head = re.match(r'(Template:)(.*)', head)[2]
-    if re.match(r'(Template:)(.*))', tail) is not None:
-        tail = re.match(r'(Template:)(.*))', tail)[2]
+    if re.match(r'(Template:)(.*)', tail) is not None:
+        tail = re.match(r'(Template:)(.*)', tail)[2]
+
+    # 删除Wikipedia:
+    if re.match(r'(Wikipedia:)(.*)', head) is not None:
+        head = re.match(r'(Wikipedia:)(.*)', head)[2]
+    if re.match(r'(Wikipedia:)(.*)', tail) is not None:
+        tail = re.match(r'(Wikipedia:)(.*)', tail)[2]
 
     # 删除尾部括号注释
     if re.match(r'(.*)([(].*[)])', head) is not None:
