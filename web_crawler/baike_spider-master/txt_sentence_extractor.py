@@ -98,40 +98,40 @@ def save_output():
     #     '病症':disease_file
     #     '检查':inspect_file
     for entry in sentences_dict:
-        if entry[1] is '可医治':
-            for substring in entry[0]:
+        if re.match(r'治疗', entry[1]) is not None:
+            for substring in entry:
                 cure_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     cure_file.write(';;;;ll;;;;')
             cure_file.write('\n')
-        if entry[1] is '推荐药物':
-            for substring in entry[0]:
+        if re.match(r'使用|医治|治疗|用于|推荐|预防', entry[1]) is not None:
+            for substring in entry:
                 recommend_drug_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     recommend_drug_file.write(';;;;ll;;;;')
             recommend_drug_file.write('\n')
-        if entry[1] is '引起':
-            for substring in entry[0]:
+        if re.match(r'引起|导致|所致|由于|原因|刺激|感染|产生|造成|因为|出现', entry[1]) is not None:
+            for substring in entry:
                 cause_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     cause_file.write(';;;;ll;;;;')
             cause_file.write('\n')
-        if entry[1] is '检测':
-            for substring in entry[0]:
+        if re.match(r'检查|可发现|检测|诊断', entry[1]) is not None:
+            for substring in entry:
                 detect_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     detect_file.write(';;;;ll;;;;')
             detect_file.write('\n')
-        if entry[1] is '病症':
-            for substring in entry[0]:
+        if re.match(r'患者|主要|表现|不同程度|伴有|常有|典型|并发|继发|表现为|症状为|多见于|多发生|可见于|为特征', entry[1]) is not None:
+            for substring in entry:
                 disease_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     disease_file.write(';;;;ll;;;;')
             disease_file.write('\n')
-        if entry[1] is '检查':
-            for substring in entry[0]:
+        if re.match(r'检查|检测', entry[1]) is not None:
+            for substring in entry:
                 inspect_file.write(substring)
-                if substring != entry[0][-1]:
+                if substring != entry[-1]:
                     inspect_file.write(';;;;ll;;;;')
             inspect_file.write('\n')
 
@@ -154,14 +154,20 @@ for dir_path, dir_names, file_names in os.walk(r'D:\Project\Python\PythonGadgets
 for file in file_list:
     if file.endswith('.json'):
         print('正在读取文件：' + repr(file).encode('gbk', 'ignore').decode('gbk'))
-        json_file = open(os.path.join('classified-merged/classified-merged-json/v2/', file), 'r', encoding='utf-8')
+        json_file = open(os.path.join('classified-merged/classified-merged-json/v2', file), 'r', encoding='utf-8')
         for json_line in json_file:
             line = json.loads(json_line)
             # 在summary里根据正则表达式找匹配的句子及其所属类别，将结果加入总字典sentences中
-            find_sentence(line['summary'])
+            try:
+                find_sentence(line['summary'])
+            except:
+                print('数据异常')
             # 在contents的各个text里根据正则表达式找匹配的句子及其所属类别
             for content in line['contents']:
-                find_sentence(content['text'])
+                try:
+                    find_sentence(content['text'])
+                except:
+                    print('数据异常')
         json_file.close()
 
 # 将结果保存在文件里
