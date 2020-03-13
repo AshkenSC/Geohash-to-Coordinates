@@ -61,23 +61,89 @@ regex_dict = {
 }
 
 # 保存所有找到的句子及其类别的字典，格式为sentence:type
-sentences = dict()
+sentences_dict = dict()
+# 保存结果的文件
+cure_file = open('sentences/baidu/cure.txt', 'w', encoding='utf-8')
+recommend_drug_file = open('sentences/baidu/recommend_drug.txt', 'w', encoding='utf-8')
+cause_file = open('sentences/baidu/cause.txt', 'w', encoding='utf-8')
+detect_file = open('sentences/baidu/detect.txt', 'w', encoding='utf-8')
+disease_file = open('sentences/baidu/disease.txt', 'w', encoding='utf-8')
+inspect_file = open('sentences/baidu/inspect.txt', 'w', encoding='utf-8')
 
 # 找到给定文本里所有符合规则的句子
 # 返回一个字典（sentence:type），sentence用于保存句子，type用于保存sentence对应的句子类别
 def find_sentence(text):
-    global sentences
-    sentence_and_type = dict()
-    for type, regex in regex_dict.items():
-        re.findall(regex, )
-    for entry in sentence_and_type.items():
-        sentences[entry[0]] = entry[1]
+    global sentences_dict
+    for sentence_type, regex in regex_dict.items():
+        # 找到text所有句子
+        sentences = re.findall(regex, text)
+        # 确定当前text里所有句子的类别
+        for sentence in sentences:
+            sentences_dict[sentence] = sentence_type
+            print('找到句子：' + repr(sentence).encode('gbk', 'ignore').decode('gbk') + '；类别：' + sentence_type)
+
+# 将结果保存到相应文件里
+def save_output():
+    #     '可医治':cure_file,
+    #     '推荐药物':recommend_drug_file,
+    #     '引起':cause_file
+    #     '检测':detect_file
+    #     '病症':disease_file
+    #     '检查':inspect_file
+    for entry in sentences_dict:
+        if entry[1] is '可医治':
+            for substring in entry[0]:
+                cure_file.write(substring)
+                if substring != entry[0][-1]:
+                    cure_file.write(';;;;ll;;;;')
+            cure_file.write('\n')
+        if entry[1] is '推荐药物':
+            for substring in entry[0]:
+                recommend_drug_file.write(substring)
+                if substring != entry[0][-1]:
+                    recommend_drug_file.write(';;;;ll;;;;')
+            recommend_drug_file.write('\n')
+        if entry[1] is '引起':
+            for substring in entry[0]:
+                cause_file.write(substring)
+                if substring != entry[0][-1]:
+                    cause_file.write(';;;;ll;;;;')
+            cause_file.write('\n')
+        if entry[1] is '检测':
+            for substring in entry[0]:
+                detect_file.write(substring)
+                if substring != entry[0][-1]:
+                    detect_file.write(';;;;ll;;;;')
+            detect_file.write('\n')
+        if entry[1] is '病症':
+            for substring in entry[0]:
+                disease_file.write(substring)
+                if substring != entry[0][-1]:
+                    disease_file.write(';;;;ll;;;;')
+            disease_file.write('\n')
+        if entry[1] is '检查':
+            for substring in entry[0]:
+                inspect_file.write(substring)
+                if substring != entry[0][-1]:
+                    inspect_file.write(';;;;ll;;;;')
+            inspect_file.write('\n')
+
+# 关闭所有保存句子的文件
+def close_output():
+    cure_file.close()
+    recommend_drug_file.close()
+    cause_file.close()
+    detect_file.close()
+    disease_file.close()
+    inspect_file.close()
 
 
 file_list = list()  # 保存当前目录下的文件列表
 for dir_path, dir_names, file_names in os.walk(r'D:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\classified-merged\classified-merged-json\v2'):
     for file_name in file_names:
         file_list.append(os.path.join(dir_path, file_name))
+
+# 逐个读取文件并抽取句子
 for file in file_list:
     if file.endswith('.json'):
         print('正在读取文件：' + repr(file).encode('gbk', 'ignore').decode('gbk'))
@@ -89,8 +155,9 @@ for file in file_list:
             # 在contents的各个text里根据正则表达式找匹配的句子及其所属类别
             for content in line['contents']:
                 find_sentence(content['text'])
-
-
-
         json_file.close()
 
+# 将结果保存在文件里
+save_output()
+# 关闭所有输出结果的文件
+close_output()
