@@ -52,13 +52,14 @@ import os
 import re
 
 regex_dict = {
-    '可医治':r'(?:[，。；]*)([^，。；]*)(治疗)([^，。；]*)(?:[，。；])',
-    '推荐药物':r'(?:[，。；]*)([^，。；]*)(使用|医治|治疗|用于|推荐|预防)([^，。；]*)(?:[，。；])',
-    '引起':r'(?:[，。；]*)([^，。；]*)(引起|导致|所致|由于|原因|刺激|感染|产生|造成|因为|出现)([^，。；]*)(?:[，。；])',
-    '检测':r'(?:[，。；]*)([^，。；]*)(检查|可发现|检测|诊断)([^，。；]*)(?:[，。；])',
-    '病症':r'(?:[，。；]*)([^，。；]*)(患者|主要|表现|不同程度|伴有|常有|典型|并发|继发|表现为|症状为|多见于|多发生|可见于|为特征)([^，。；]*)(?:[，。；])',
-    '检查':r'(?:[，。；]*)([^，。；]*)(检查|检测)([^，。；]*)(?:[，。；])',
+    '可医治':r'(?:[，。；]*)([^，。；]+)(治疗)([^，。；]+)(?:[，。；])',
+    '推荐药物':r'(?:[，。；]*)([^，。；]+)(使用|医治|治疗|用于|推荐|预防)([^，。；]+)(?:[，。；])',
+    '引起':r'(?:[，。；]*)([^，。；]+)(引起|导致|所致|由于|原因|刺激|感染|产生|造成|因为|出现)([^，。；]+)(?:[，。；])',
+    '检测':r'(?:[，。；]*)([^，。；]+)(检查|可发现|检测|诊断)([^，。；]+)(?:[，。；])',
+    '病症':r'(?:[，。；]*)([^，。；]+)(患者|主要|表现|不同程度|伴有|常有|典型|并发|继发|表现为|症状为|多见于|多发生|可见于|为特征)([^，。；]+)(?:[，。；])',
+    '检查':r'(?:[，。；]*)([^，。；]+)(检查|检测)([^，。；]+)(?:[，。；])',
 }
+
 
 # 保存所有找到的句子及其类别的字典，格式为sentence:type
 sentences_dict = dict()
@@ -70,6 +71,7 @@ detect_file = open('sentences/baidu/detect.txt', 'w', encoding='utf-8')
 disease_file = open('sentences/baidu/disease.txt', 'w', encoding='utf-8')
 inspect_file = open('sentences/baidu/inspect.txt', 'w', encoding='utf-8')
 
+
 # 找到给定文本里所有符合规则的句子
 # 返回一个字典（sentence:type），sentence用于保存句子，type用于保存sentence对应的句子类别
 def find_sentence(text):
@@ -79,8 +81,13 @@ def find_sentence(text):
         sentences = re.findall(regex, text)
         # 确定当前text里所有句子的类别
         for sentence in sentences:
-            sentences_dict[sentence] = sentence_type
-            print('找到句子：' + repr(sentence).encode('gbk', 'ignore').decode('gbk') + '；类别：' + sentence_type)
+            # 去除句子里的换行符
+            stripped_sentence = list()
+            for substring in sentence:
+                stripped_sentence.append(substring.replace('\n', ' '))
+            # 将句子存入sentences里
+            sentences_dict[tuple(stripped_sentence)] = sentence_type
+            print('找到句子：' + repr(stripped_sentence).encode('gbk', 'ignore').decode('gbk') + '；类别：' + sentence_type)
 
 # 将结果保存到相应文件里
 def save_output():
@@ -161,3 +168,14 @@ for file in file_list:
 save_output()
 # 关闭所有输出结果的文件
 close_output()
+
+
+res = [('胰岛\n素可以', '治疗', '糖\n尿病'), ('同时各类、降压\n药能', '医治', '高血压')]
+print(res)
+new = list()
+for sentence in res:
+    a = list()
+    for substring in sentence:
+        a.append(substring.replace('\n', ' '))
+    new.append(a)
+print(new)
