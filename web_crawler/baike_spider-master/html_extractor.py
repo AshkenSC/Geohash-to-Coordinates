@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 import json
 import re
 
-SOURCE = r"F:/Projects/corona/hudong_data/xml/entity_page"
-DEST = r'F:/Projects/corona/hudong_data/html/bacteria_disease_drug_virus'
+SOURCE = r"f:\Projects\corona\hudong_data\html\inspection"
+DEST = r'f:\Projects\corona\hudong_data\json\inspection.json'
 
 # 1. 将XML文件分割为page并单独保存
 
@@ -89,9 +89,39 @@ def get_new_data(soup, html):
 
     return res_data
 
+# 2. 从互动百科的HTML中提取信息
+def get_new_data_hudong(soup, html):
+    res_data = {}
+
+    # get title
+    title = soup.find('title').get_text()
+    res_data['name'] = title.strip()
+
+    # get summary
+    summary_node = soup.find('div', class_="summary").get_text().replace('\n', '').strip()
+    res_data['summary'] = _clean_text(summary_node)
+
+    # get contents
+    # TODO 提取正文的纯文本
+    nodes = soup.find_all('div', class_='content_h2')
+    res_data['contents'] = _get_contents(nodes)
+
+    # get labels
+    # res_data['labels'] = []
+    # labels = soup.find_all('span', class_="taglist")
+    # for label in labels:
+    #     res_data['labels'].append(label.get_text().strip())
+
+    # get url
+    # 对每个实体新增url属性，记录对应百科页面的url
+    res_data['url'] = ''
+
+    return res_data
+
 def parse(html):
     soup = BeautifulSoup(html, 'html.parser')
-    new_data = get_new_data(soup, html)
+    # new_data = get_new_data(soup, html) # 获取百度页面信息
+    new_data = get_new_data_hudong(soup, html)  # 获取互动页面信息
     return new_data
 
 def write_file(source_path, dest_path, page_num):
@@ -100,7 +130,11 @@ def write_file(source_path, dest_path, page_num):
         if i == 26:
             print(i)
             continue
-        html_file = open(os.path.join(source_path, '{}.htm').format(i), 'r', encoding='utf-8')
+        try:
+            html_file = open(os.path.join(source_path, '{}.htm').format(i), 'r', encoding='utf-8')
+        except:
+            print('页码数超出了范围')
+            continue
         html = ''
         for line in html_file:
             html += line
@@ -154,5 +188,5 @@ def _get_contents(nodes):
                     contents.append({'title': _title, 'text': _content.strip()})
     return contents
 
-page_num = split_page(SOURCE, DEST)
-#write_file(SOURCE, DEST, page_num)
+#page_num = split_page(SOURCE, DEST)
+write_file(SOURCE, DEST, 50)
