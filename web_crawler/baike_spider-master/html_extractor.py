@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 import json
 import re
 
-SOURCE = r"f:\Projects\corona\hudong_data\html\inspection"
-DEST = r'f:\Projects\corona\hudong_data\json\inspection.json'
+SOURCE = r"f:\Projects\corona\hudong_data\html\symptom"
+DEST = r'f:\Projects\corona\hudong_data\json\symptom.json'
 
 # 1. 将XML文件分割为page并单独保存
 
@@ -98,8 +98,12 @@ def get_new_data_hudong(soup, html):
     res_data['name'] = title.strip()
 
     # get summary
-    summary_node = soup.find('div', class_="summary").get_text().replace('\n', '').strip()
-    res_data['summary'] = _clean_text(summary_node)
+    try:
+        summary_node = soup.find('div', class_="summary").get_text().replace('\n', '').strip()
+        res_data['summary'] = _clean_text(summary_node)
+    except:
+        res_data['summary'] = ''
+        print(title.strip().encode('gbk', 'ignore').decode('gbk') + 'summary为空')
 
     # get contents
     # TODO 提取正文的纯文本
@@ -189,4 +193,4 @@ def _get_contents(nodes):
     return contents
 
 #page_num = split_page(SOURCE, DEST)
-write_file(SOURCE, DEST, 50)
+write_file(SOURCE, DEST, 1900)
