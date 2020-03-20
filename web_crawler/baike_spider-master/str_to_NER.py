@@ -22,7 +22,7 @@ with BertClient(show_server_config=False, check_version=False, check_length=Fals
     sub_sentences = list()
     for line in source_file:
         fragments = line.split(';;;;ll;;;;')
-        if len(fragments) == 3 and re.match(r' +', fragments[0]) is None and re.match(r' +', fragments[2]) is None:
+        if len(fragments) == 3 and re.match('[ \u2003]+', fragments[0]) is None and re.match(r' +', fragments[2]) is None:
             fragments = [fragments[0], fragments[2]]
             print(fragments[0], fragments[1])
             # 将所有短句进行NER转码
