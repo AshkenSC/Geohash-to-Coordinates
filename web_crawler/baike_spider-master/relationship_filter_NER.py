@@ -64,7 +64,7 @@ CATEGORY = 'cure'
 
 # 找出单个半句中的所有实体
 # 读入的参数：短句和对应的标记
-# 返回list：{entity1:type, entity2:type, ...}
+# 返回list：[(entity1, type), (entity2, type), ...]
 def find_entity(sentence_mark):
     entities = list() # [(entity1, type), (entity2, type), ...]
     current_entity = list() # [char1, char2, char3, ...]
@@ -104,11 +104,11 @@ def find_entity(sentence_mark):
     return entities
 
 # 判断句子是否符合要求
-# 读入参数：
+# 读入参数：句子前后半句及其对应标记（pair）；当前处理的category
 def is_valid_relation(pair, category):
     if category == 'cure':
     # 治疗
-        if 'B-BAC' in find_entity(pair[0]).values() \
+        if 'B-BAC' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
         and 'B-SYM' in find_entity(pair[1]).values():
             return True
     if category == 'recommend_drug':
@@ -207,6 +207,21 @@ for line in sentence_file:
     fragments = line.split(';;;;ll;;;;')
     if len(fragments) == 3 and re.match('[ \u2003]+', fragments[0]) is None and re.match('[ \u2003]+',  fragments[2]) is None:
         # 构成[[(1-A, mark)，(1-B, mark)],[(2-A, mark), (2-B, mark)], ...]
+
+        # 处理标记和实际文本长度不匹配的情况，对长的部分进行截断
+        if len(fragments[0]) > len(mark[i][0]):
+        # 前半句文本>前半句标记
+            fragments[0] = fragments[0][0:len(mark[i][0])]
+        if len(fragments[0]) < len(mark[i][0]):
+        # 前半句文本<前半句标记
+            mark[i][0] = mark[i][0][0:len(fragments[0])]
+        if len(fragments[2]) > len(mark[i][1]):
+        # 后半句文本>后半句标记
+            fragments[2] = fragments[2][0:len(mark[i][1])]
+        if len(fragments[2]) < len(mark[i][1]):
+        # 后半句文本<后半句标记
+            mark[i][1] = mark[i][1][0:len(fragments[2])]
+
         sentence_and_mark.append([(fragments[0], mark[i][0]), (fragments[2], mark[i][1])])
         i += 1
 
