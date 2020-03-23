@@ -108,37 +108,37 @@ def find_entity(sentence_mark):
 def is_valid_relation(pair, category):
     if category == 'cure':
     # 治疗
-        if 'B-BAC' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if 'B-BAC' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     if category == 'recommend_drug':
     # 推荐药物
-        if 'B-DIS' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and 'B-DRU' in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if 'B-DIS' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and 'B-DRU' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
-        if 'B-DRU' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and 'B-DIS' in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if 'B-DRU' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and 'B-DIS' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     if category == 'cause':
     # 引起
-        if ('B-BAC' or 'B-DIS' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if ('B-BAC' or 'B-DIS' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     # TODO: 相似疾病症状
     if category == 'detect':
     # 检测
-        if 'B-INS' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and ('B-DRU' or 'B-DIS' or 'B-SYM' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if 'B-INS' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and ('B-DRU' or 'B-DIS' or 'B-SYM' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     if category == 'disease':
     # 病症
-        if ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]:
+        if ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     if category == 'inspection':
     # 检查
-        if 'B-SPE' in [sen_mark[1] for sen_mark in find_entity(pair[0]).values()] \
-        and (('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1]).values()]):
+        if 'B-SPE' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        and (('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1])]):
             return True
 
 # 从句子中抽出两个实体
