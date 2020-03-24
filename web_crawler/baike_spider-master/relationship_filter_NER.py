@@ -209,21 +209,22 @@ for line in sentence_file:
         # 构成[[(1-A, mark)，(1-B, mark)],[(2-A, mark), (2-B, mark)], ...]
 
         # 处理标记和实际文本长度不匹配的情况，对长的部分进行截断
-        if len(fragments[0]) > len(mark[i]):
+        if len(fragments[0]) > len(mark[i][0]):
         # 前半句文本>前半句标记
-            fragments[0] = fragments[0][0:len(mark[i])]
-        if len(fragments[0]) < len(mark[i]):
+            fragments[0] = fragments[0][0:len(mark[i][0])]
+        if len(fragments[0]) < len(mark[i][0]):
         # 前半句文本<前半句标记
-            mark[i] = mark[i][0:len(fragments[0])]
-        if len(fragments[2]) > len(mark[i + 1]):
+            mark[i][0] = mark[i][0][0:len(fragments[0])]
+        if len(fragments[2]) > len(mark[i][1]):
         # 后半句文本>后半句标记
-            fragments[2] = fragments[2][0:len(mark[i + 1])]
-        if len(fragments[2]) < len(mark[i + 1]):
+            fragments[2] = fragments[2][0:len(mark[i][1])]
+        if len(fragments[2]) < len(mark[i][1]):
         # 后半句文本<后半句标记
-            mark[i + 1] = mark[i + 1][0:len(fragments[2])]
+            mark[i][1] = mark[i][1][0:len(fragments[2])]
 
-        sentence_and_mark.append([(fragments[0], mark[i]), (fragments[2], mark[i + 1])])
-        i += 2
+        sentence_and_mark.append([(fragments[0], mark[i][0]), (fragments[2], mark[i][1])])
+        if i + 2 < len(mark):
+            i += 2
 
 # 找出标记文本中的实体，对出现实体数>=2的句子，保留到sentence_to_check备查
 # 判断前后半句是否出现了符合类别要求的实体，符合者保留到valid_relations
@@ -234,11 +235,17 @@ for pair in sentence_and_mark:
         sentence_to_check.append(pair[0][0] + ' ' + CATEGORY + ' ' + pair[1][0])
         if is_valid_relation(pair, CATEGORY) is True:
             valid_relations.append(pair)
+            print('找到关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
+        else:
+            print('丢弃关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
+
 
 # 输出结果：1）备查句合集
 sentence_to_check_file = open(os.path.join(PATH, 'to_check', CATEGORY + '_to_check.txt'), 'w', encoding='utf-8')
 for sentence in sentence_to_check:
-    sentence_to_check_file.write(sentence + '\n')
+    sentence_to_check_file.write(sentence)
+    if sentence[-1] != '\n':
+        sentence_to_check_file.write('\n')
 sentence_to_check_file.close()
 
 # 输出结果：2）筛选并格式化后的关系合集
