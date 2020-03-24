@@ -249,7 +249,7 @@ for pair in valid_relations:
     # 写head和tail的所属类别
     valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
     # 写三元组
-    valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(CATEGORY, front_entity[1]) + front_entity[1] + '\n')
+    valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(CATEGORY, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
 valid_relations_file.close()
 
 sentence_file.close()
