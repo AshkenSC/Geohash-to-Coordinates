@@ -109,7 +109,7 @@ def is_valid_relation(pair, category):
     if category == 'cure':
     # 治疗
         if 'B-BAC' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
-        and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
+        and {'B-SYM','B-DIS'} & set([sen_mark[1] for sen_mark in find_entity(pair[1])]) != set():
             return True
     if category == 'recommend_drug':
     # 推荐药物
@@ -121,24 +121,24 @@ def is_valid_relation(pair, category):
             return True
     if category == 'cause':
     # 引起
-        if ('B-BAC' or 'B-DIS' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
-        and ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
+        if {'B-BAC', 'B-DIS', 'B-VIR'} & set([sen_mark[1] for sen_mark in find_entity(pair[0])]) != set() \
+        and {'B-DIS', 'B-SYM'} & set([sen_mark[1] for sen_mark in find_entity(pair[1])]) != set():
             return True
     # TODO: 相似疾病症状
     if category == 'detect':
     # 检测
         if 'B-INS' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
-        and ('B-DRU' or 'B-DIS' or 'B-SYM' or 'B-VIR') in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
+        and {'B-DRU', 'B-DIS', 'B-SYM', 'B-VIR'} & set([sen_mark[1] for sen_mark in find_entity(pair[1])]) != set():
             return True
     if category == 'disease':
     # 病症
-        if ('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
+        if {'B-DIS', 'B-SYM'} & set([sen_mark[1] for sen_mark in find_entity(pair[0])]) != set() \
         and 'B-SYM' in [sen_mark[1] for sen_mark in find_entity(pair[1])]:
             return True
     if category == 'inspection':
     # 检查
         if 'B-SPE' in [sen_mark[1] for sen_mark in find_entity(pair[0])] \
-        and (('B-DIS' or 'B-SYM') in [sen_mark[1] for sen_mark in find_entity(pair[1])]):
+        and {'B-DIS', 'B-SYM'} & set([sen_mark[1] for sen_mark in find_entity(pair[1])]) != set():
             return True
 
 # 从句子中抽出两个实体
@@ -209,21 +209,21 @@ for line in sentence_file:
         # 构成[[(1-A, mark)，(1-B, mark)],[(2-A, mark), (2-B, mark)], ...]
 
         # 处理标记和实际文本长度不匹配的情况，对长的部分进行截断
-        if len(fragments[0]) > len(mark[i][0]):
+        if len(fragments[0]) > len(mark[i]):
         # 前半句文本>前半句标记
-            fragments[0] = fragments[0][0:len(mark[i][0])]
-        if len(fragments[0]) < len(mark[i][0]):
+            fragments[0] = fragments[0][0:len(mark[i])]
+        if len(fragments[0]) < len(mark[i]):
         # 前半句文本<前半句标记
-            mark[i][0] = mark[i][0][0:len(fragments[0])]
-        if len(fragments[2]) > len(mark[i][1]):
+            mark[i] = mark[i][0:len(fragments[0])]
+        if len(fragments[2]) > len(mark[i + 1]):
         # 后半句文本>后半句标记
-            fragments[2] = fragments[2][0:len(mark[i][1])]
-        if len(fragments[2]) < len(mark[i][1]):
+            fragments[2] = fragments[2][0:len(mark[i + 1])]
+        if len(fragments[2]) < len(mark[i + 1]):
         # 后半句文本<后半句标记
-            mark[i][1] = mark[i][1][0:len(fragments[2])]
+            mark[i + 1] = mark[i + 1][0:len(fragments[2])]
 
-        sentence_and_mark.append([(fragments[0], mark[i][0]), (fragments[2], mark[i][1])])
-        i += 1
+        sentence_and_mark.append([(fragments[0], mark[i]), (fragments[2], mark[i + 1])])
+        i += 2
 
 # 找出标记文本中的实体，对出现实体数>=2的句子，保留到sentence_to_check备查
 # 判断前后半句是否出现了符合类别要求的实体，符合者保留到valid_relations
@@ -238,7 +238,7 @@ for pair in sentence_and_mark:
 # 输出结果：1）备查句合集
 sentence_to_check_file = open(os.path.join(PATH, 'to_check', CATEGORY + '_to_check.txt'), 'w', encoding='utf-8')
 for sentence in sentence_to_check:
-    sentence_to_check_file.write(sentence[0] + ' ' + CATEGORY + ' ' + sentence[1] + '\n')
+    sentence_to_check_file.write(sentence + '\n')
 sentence_to_check_file.close()
 
 # 输出结果：2）筛选并格式化后的关系合集
