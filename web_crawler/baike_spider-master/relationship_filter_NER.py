@@ -7,6 +7,9 @@
 # 5）再检查1和2中是否分别出现了符合关键词要求的实体。如果出现了，选择1最右边的实体，和2最左边的实体，按照规定格式，存入result
 # 6）对拼接起来的同一类的结果，最后要进行一次去重
 
+# 最后，因为抽句子时，“相关疾病”和“相关症状”同为similar，且多出了“可医治”cure，因此需要做最后处理
+# 将similar进行分流；将cure归类到推荐药物里
+
 '''
 rel == 治疗:   归为 可医治
 治疗，head == 细菌，tail == 症状（如肉毒杆菌治疗肌肉痉挛）
@@ -189,6 +192,135 @@ def get_verb(category, tag):
     if category == 'inspection':
         return '检查'
 
+# 导入实体名集合
+def load_entity_names():
+    disease = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_disease.txt', 'r', encoding='utf-8')
+    drug = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_drug.txt', 'r', encoding='utf-8')
+    bacteria = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_bacteria.txt', 'r', encoding='utf-8')
+    virus = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_virus.txt', 'r', encoding='utf-8')
+    symptom = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_symptom.txt', 'r', encoding='utf-8')
+    inspect = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_inspection.txt', 'r', encoding='utf-8')
+    specialty = open(r'f:\Projects\corona\ngrams_baidu\entity_names\new_specialty.txt', 'r', encoding='utf-8')
+
+    # 载入别名文件，将别名放入实体名库中
+    alias_bacteria = open('alias/alias_bacteria.json', 'r', encoding='utf-8')
+    alias_disease = open('alias/alias_disease.json', 'r', encoding='utf-8')
+    alias_drug = open('alias/alias_drug.json', 'r', encoding='utf-8')
+    alias_virus = open('alias/alias_virus.json', 'r', encoding='utf-8')
+
+    for line in disease:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        disease_set.add(line.strip('\n'))
+    for line in drug:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        drug_set.add(line.strip('\n'))
+    for line in bacteria:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        bacteria_set.add(line.strip('\n'))
+    for line in virus:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        virus_set.add(line.strip('\n'))
+    for line in symptom:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        symptom_set.add(line.strip('\n'))
+    for line in inspect:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        inspect_set.add(line.strip('\n'))
+    for line in specialty:
+        #print('正在载入：' + line.encode('gbk', 'ignore').decode('gbk'))
+        specialty_set.add(line.strip('\n'))
+
+    # 载入别名
+    alias_bacteria_json = json.load(alias_bacteria)
+    for alias_list in alias_bacteria_json.values():
+        for alias in alias_list:
+            bacteria_set.add(alias)
+    alias_disease_json = json.load(alias_disease)
+    for alias_list in alias_disease_json.values():
+        for alias in alias_list:
+            disease_set.add(alias)
+    alias_drug_json = json.load(alias_drug)
+    for alias_list in alias_drug_json.values():
+        for alias in alias_list:
+            drug_set.add(alias)
+    alias_virus_json = json.load(alias_virus)
+    for alias_list in alias_virus_json.values():
+        for alias in alias_list:
+            virus_set.add(alias)
+
+    disease.close()
+    drug.close()
+    bacteria.close()
+    virus.close()
+
+# 根据实体名确认是否是正确关系
+def are_valid_entities(category, front_entity, back_entity):
+    if category == 'cure':
+        if front_entity[0] in bacteria_set \
+        and back_entity[0] in (disease_set | symptom_set):
+            return True
+    if category == 'recommend_drug':
+        if front_entity[0] in (disease_set | symptom_set) \
+        and back_entity[0] in drug_set:
+            return True
+    if category == 'cause':
+        if front_entity[0] in (bacteria_set | drug_set | disease_set) \
+        and back_entity[0] in (symptom_set | disease_set):
+            return True
+    if category == 'similar':
+        if front_entity[0] in disease_set and back_entity[0] in disease_set \
+        or front_entity[0] in symptom_set and back_entity[0] in symptom_set:
+            return True
+    if category == 'detect':
+        if front_entity[0] in inspect_set \
+        and back_entity[0] in (disease_set | symptom_set | virus_set | bacteria_set | drug_set):
+            return True
+    if category == 'disease':
+        if front_entity[0] in disease_set and back_entity[0] in symptom_set \
+        or front_entity[0] in symptom_set and back_entity[0] in disease_set:
+            return True
+    if category == 'inspect':
+        if front_entity[0] in specialty_set \
+        and back_entity[0] in (disease_set | symptom_set | virus_set | bacteria_set):
+            return True
+
+# 对输出结果的最后处理
+# 1）将cure转为推荐药物（重命名关系）
+# 2) 分流相关疾病and相关症状
+# 3) 对“引起”中的“疾病引起疾病”归类到“相关疾病”；“疾病引起症状”归类到“病症”
+# 4）对部分特殊三元组的头尾进行交换，使其符合逻辑
+def post_process(category, front_entity, back_entity):
+    new_category = category
+    new_front = front_entity
+    new_back = back_entity
+
+    if category == 'cure':
+    # 将“可医治”归类到“推荐药物”
+        category = 'recommend_drug'
+    if category == 'similar':
+    # 将“相似疾病”和“相似症状”分流
+        if front_entity[0] in disease_set:
+            new_category = 'similar_disease'
+        else:
+            new_category = 'similar_symptom'
+    if category == 'cause':
+    # 将“引起”中的“疾病引起疾病”归类到“相关疾病”；“疾病引起症状”归类到“病症”
+        if front_entity[0] in disease_set and back_entity[0] in disease_set:
+            new_category = 'similar_disease'
+        if front_entity[0] in disease_set and back_entity[0] in symptom_set:
+            new_category = 'disease'
+
+    # 对部分三元组的头尾进行交换，使其符合逻辑
+    if new_category == 'recommend_drug':
+        if front_entity[0] in drug_set and back_entity[0] in (disease_set | symptom_set):
+            new_back = front_entity
+            new_front = back_entity
+    if new_category == 'disease':
+        if front_entity[0] in symptom_set and back_entity[0] in disease_set:
+            new_back = front_entity
+            new_front = back_entity
+
+    return new_category, new_front, new_back
 
 # 载入原始句子文档和对应的标记文档
 sentence_file = open(os.path.join(PATH, CATEGORY + '.txt'), 'r', encoding='utf-8')
@@ -202,6 +334,7 @@ sentence_and_mark = list()  # 保存从文件中读取的句子和对应的标�
 mark = json.loads(mark_file.readline())
 
 # 读取句子文档，构成句子-标记的映射
+# 处理标记和实际文本长度不匹配的情况
 i = 0
 for line in sentence_file:
     fragments = line.split(';;;;ll;;;;')
@@ -223,18 +356,18 @@ for line in sentence_file:
             mark[i][1] = mark[i][1][0:len(fragments[2])]
 
         sentence_and_mark.append([(fragments[0], mark[i][0]), (fragments[2], mark[i][1])])
-        if i + 2 < len(mark):
-            i += 2
+        if i + 1 < len(mark):
+            i += 1
 
 # 找出标记文本中的实体，对出现实体数>=2的句子，保留到sentence_to_check备查
 # 判断前后半句是否出现了符合类别要求的实体，符合者保留到valid_relations
 sentence_to_check = list()  # 备查的句子
-valid_relations = list()    # 符合规范的关系
+relations = list()          # 类别符合规范的关系，但还需要经过实体库检测
 for pair in sentence_and_mark:
     if len(find_entity(pair[0])) + len(find_entity(pair[1])) > 1:
         sentence_to_check.append(pair[0][0] + ' ' + CATEGORY + ' ' + pair[1][0])
         if is_valid_relation(pair, CATEGORY) is True:
-            valid_relations.append(pair)
+            relations.append(pair)
             print('找到关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
         else:
             print('丢弃关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
@@ -248,17 +381,49 @@ for sentence in sentence_to_check:
         sentence_to_check_file.write('\n')
 sentence_to_check_file.close()
 
-# 输出结果：2）筛选并格式化后的关系合集
-valid_relations_file = open(os.path.join(PATH, 'relations', CATEGORY + '_relation.txt'), 'w', encoding='utf-8')
-for pair in valid_relations:
+# 输出结果：2）初步筛选并格式化后的关系合集
+relations_file = open(os.path.join(PATH, 'relations', CATEGORY + '_relation_to_check.txt'), 'w', encoding='utf-8')
+for pair in relations:
     # 找出选入三元组的实体
     front_entity, back_entity = pick_entity(pair)
     # 写head和tail的所属类别
-    valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
+    relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
     # 写三元组
-    valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(CATEGORY, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
+    relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(CATEGORY, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
+relations_file.close()
+
+# 输出结果：3）经过实体库筛选后的关系合集
+disease_set = set()
+drug_set = set()
+bacteria_set = set()
+virus_set = set()
+symptom_set = set()
+inspect_set = set()
+specialty_set = set()
+sets = [disease_set, drug_set, bacteria_set, virus_set, symptom_set, inspect_set, specialty_set]
+# 导入实体名集合
+load_entity_names()
+
+# 判断关系中的实体名是否在实体库中
+# 若合法，则对关系作最后处理，并保存结果
+valid_relations_file = open(os.path.join(PATH, 'relations', CATEGORY + '_relation_final.txt'), 'w', encoding='utf-8')
+for pair in relations:
+    # 找出选入三元组的实体
+    front_entity, back_entity = pick_entity(pair)
+    # 判断关系中的实体名是否在实体库中
+    if are_valid_entities(CATEGORY, front_entity, back_entity):
+        # 对关系作最后处理
+        current_category, front_entity, back_entity = post_process(CATEGORY, front_entity, back_entity)
+        # 保存最终结果
+        # 写head和tail的所属类别
+        valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
+        # 写三元组
+        valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(current_category, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
+    else:
+        print(('关系中出现的实体不在实体库中：' + front_entity[0] + current_category + back_entity[0]).encode('gbk', 'ignore').decode('gbk'))
 valid_relations_file.close()
 
+# 关闭数据源
 sentence_file.close()
 mark_file.close()
 
