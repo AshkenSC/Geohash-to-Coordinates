@@ -7,8 +7,8 @@
 # 5）再检查1和2中是否分别出现了符合关键词要求的实体。如果出现了，选择1最右边的实体，和2最左边的实体，按照规定格式，存入result
 # 6）对拼接起来的同一类的结果，最后要进行一次去重
 
-# 最后，因为抽句子时，“相关疾病”和“相关症状”同为similar，且多出了“可医治”cure，因此需要做最后处理
-# 将similar进行分流；将cure归类到推荐药物里
+# 最后，因为抽句子时，“相关疾病”和“相关症状”同为related，且多出了“可医治”cure，因此需要做最后处理
+# 将related进行分流；将cure归类到推荐药物里
 
 '''
 rel == 治疗:   归为 可医治
@@ -62,8 +62,8 @@ import os
 import re
 import json
 
-PATH = r'd:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\sentences\baidu'
-CATEGORY = 'cure'
+PATH = r'd:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\sentences\hudong'
+CATEGORY = 'inspect'
 
 # 找出单个半句中的所有实体
 # 读入的参数：短句和对应的标记
@@ -180,7 +180,7 @@ def get_verb(category, tag):
         return '推荐药物'
     if category == 'cause':
         return '引起'
-    if category == 'similar':
+    if category == 'related':
         if tag == 'B-DIS':
             return '相似疾病'
         elif tag == 'B-SYM':
@@ -239,6 +239,7 @@ def load_entity_names():
     for alias_list in alias_disease_json.values():
         for alias in alias_list:
             disease_set.add(alias)
+    disease_set.remove('无') # 删除错误的别名
     alias_drug_json = json.load(alias_drug)
     for alias_list in alias_drug_json.values():
         for alias in alias_list:
@@ -267,7 +268,7 @@ def are_valid_entities(category, front_entity, back_entity):
         if front_entity[0] in (bacteria_set | drug_set | disease_set) \
         and back_entity[0] in (symptom_set | disease_set):
             return True
-    if category == 'similar':
+    if category == 'related':
         if front_entity[0] in disease_set and back_entity[0] in disease_set \
         or front_entity[0] in symptom_set and back_entity[0] in symptom_set:
             return True
@@ -297,16 +298,16 @@ def post_process(category, front_entity, back_entity):
     if category == 'cure':
     # 将“可医治”归类到“推荐药物”
         category = 'recommend_drug'
-    if category == 'similar':
+    if category == 'related':
     # 将“相似疾病”和“相似症状”分流
         if front_entity[0] in disease_set:
-            new_category = 'similar_disease'
+            new_category = 'related_disease'
         else:
-            new_category = 'similar_symptom'
+            new_category = 'related_symptom'
     if category == 'cause':
     # 将“引起”中的“疾病引起疾病”归类到“相关疾病”；“疾病引起症状”归类到“病症”
         if front_entity[0] in disease_set and back_entity[0] in disease_set:
-            new_category = 'similar_disease'
+            new_category = 'related_disease'
         if front_entity[0] in disease_set and back_entity[0] in symptom_set:
             new_category = 'disease'
 
@@ -338,6 +339,7 @@ mark = json.loads(mark_file.readline())
 i = 0
 for line in sentence_file:
     fragments = line.split(';;;;ll;;;;')
+
     if len(fragments) == 3 and re.match('[ \u2003]+', fragments[0]) is None and re.match('[ \u2003]+',  fragments[2]) is None:
         # 构成[[(1-A, mark)，(1-B, mark)],[(2-A, mark), (2-B, mark)], ...]
 
@@ -368,9 +370,9 @@ for pair in sentence_and_mark:
         sentence_to_check.append(pair[0][0] + ' ' + CATEGORY + ' ' + pair[1][0])
         if is_valid_relation(pair, CATEGORY) is True:
             relations.append(pair)
-            print('找到关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
+            print('初步筛选：实体类别符合的关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
         else:
-            print('丢弃关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
+            print('初步筛选：丢弃实体类别不符关系：' + CATEGORY + repr(pair).encode('gbk', 'ignore').decode('gbk'))
 
 
 # 输出结果：1）备查句合集
@@ -422,6 +424,7 @@ for pair in relations:
             continue
         else:
             valid_relations_set.add(current_pair)
+            print('最终入选：' + repr(pair).encode('gbk', 'ignore').decode('gbk'))
         # 写head和tail的所属类别
         valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
         # 写三元组

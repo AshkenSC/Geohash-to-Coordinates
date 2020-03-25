@@ -58,19 +58,20 @@ regex_dict = {
     '检测':r'(?:[，。；]*)([^，。；]+)(检查|可发现|检测|诊断)([^，。；]+)(?:[，。；])',
     '病症':r'(?:[，。；]*)([^，。；]+)(患者|主要|表现|不同程度|伴有|常有|典型|并发|继发|表现为|症状为|多见于|多发生|可见于|为特征)([^，。；]+)(?:[，。；])',
     '检查':r'(?:[，。；]*)([^，。；]+)(检查|检测)([^，。；]+)(?:[，。；])',
+    '相似':r'(?:[，。；]*)([^，。；]+)(伴有|常有|典型|并发|继发|出现|引起|导致|常伴有|表现为|并发症|是一种|常见)([^，。；]+)(?:[，。；])',
 }
 
 
 # 保存所有找到的句子及其类别的字典，格式为sentence:type
 sentences_dict = dict()
 # 保存结果的文件
-cure_file = open('sentences/baidu/cure.txt', 'w', encoding='utf-8')
-recommend_drug_file = open('sentences/baidu/recommend_drug.txt', 'w', encoding='utf-8')
-cause_file = open('sentences/baidu/cause.txt', 'w', encoding='utf-8')
-detect_file = open('sentences/baidu/detect.txt', 'w', encoding='utf-8')
-disease_file = open('sentences/baidu/disease.txt', 'w', encoding='utf-8')
-inspect_file = open('sentences/baidu/inspect.txt', 'w', encoding='utf-8')
-
+cure_file = open(r'f:\Projects\corona\hudong_data\sentences\cure.txt', 'w', encoding='utf-8')
+recommend_drug_file = open(r'f:\Projects\corona\hudong_data\sentences\recommend_drug.txt', 'w', encoding='utf-8')
+cause_file = open(r'f:\Projects\corona\hudong_data\sentences\cause.txt', 'w', encoding='utf-8')
+detect_file = open(r'f:\Projects\corona\hudong_data\sentences\detect.txt', 'w', encoding='utf-8')
+disease_file = open(r'f:\Projects\corona\hudong_data\sentences\disease.txt', 'w', encoding='utf-8')
+inspect_file = open(r'f:\Projects\corona\hudong_data\sentences\inspect.txt', 'w', encoding='utf-8')
+related_file = open(r'f:\Projects\corona\hudong_data\sentences\related.txt', 'w', encoding='utf-8')
 
 # 找到给定文本里所有符合规则的句子
 # 返回一个字典（sentence:type），sentence用于保存句子，type用于保存sentence对应的句子类别
@@ -81,10 +82,22 @@ def find_sentence(text):
         sentences = re.findall(regex, text)
         # 确定当前text里所有句子的类别
         for sentence in sentences:
-            # 去除句子里的换行符
+            # 去除句子里的换行符，特殊空格等
             stripped_sentence = list()
             for substring in sentence:
+                substring = substring.replace('\n', ' ')
+                substring = substring.replace(u'\u3000', u' ')
+                substring = substring.replace(u'\xa0', ' ')
                 stripped_sentence.append(substring.replace('\n', ' '))
+
+            # 存入前做内容的筛选和清理
+            # ['合理', '使用', '者']
+            # ['登录后', '使用', '互动百科的服务']
+            if stripped_sentence[0] == '合理' and stripped_sentence[2] == '者':
+                continue
+            if stripped_sentence[2] == '互动百科的服务':
+                continue
+
             # 将句子存入sentences里
             sentences_dict[tuple(stripped_sentence)] = sentence_type
             print('找到句子：' + repr(stripped_sentence).encode('gbk', 'ignore').decode('gbk') + '；类别：' + sentence_type)
@@ -97,6 +110,7 @@ def save_output():
     #     '检测':detect_file
     #     '病症':disease_file
     #     '检查':inspect_file
+    #     '相似':similar_file
     for entry in sentences_dict:
         if re.match(r'治疗', entry[1]) is not None:
             for substring in entry:
@@ -134,6 +148,12 @@ def save_output():
                 if substring != entry[-1]:
                     inspect_file.write(';;;;ll;;;;')
             inspect_file.write('\n')
+        if re.match(r'伴有|常有|典型|并发|继发|出现|引起|导致|常伴有|表现为|并发症|是一种|常见', entry[1]) is not None:
+            for substring in entry:
+                inspect_file.write(substring)
+                if substring != entry[-1]:
+                    inspect_file.write(';;;;ll;;;;')
+            inspect_file.write('\n')
 
 # 关闭所有保存句子的文件
 def close_output():
@@ -146,7 +166,7 @@ def close_output():
 
 
 file_list = list()  # 保存当前目录下的文件列表
-for dir_path, dir_names, file_names in os.walk(r'D:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\classified-merged\classified-merged-json\v2'):
+for dir_path, dir_names, file_names in os.walk(r'f:\Projects\corona\hudong_data\json'):
     for file_name in file_names:
         file_list.append(os.path.join(dir_path, file_name))
 
@@ -154,7 +174,7 @@ for dir_path, dir_names, file_names in os.walk(r'D:\Project\Python\PythonGadgets
 for file in file_list:
     if file.endswith('.json'):
         print('正在读取文件：' + repr(file).encode('gbk', 'ignore').decode('gbk'))
-        json_file = open(os.path.join('classified-merged/classified-merged-json/v2', file), 'r', encoding='utf-8')
+        json_file = open(os.path.join('f:\Projects\corona\hudong_data\json', file), 'r', encoding='utf-8')
         for json_line in json_file:
             line = json.loads(json_line)
             # 在summary里根据正则表达式找匹配的句子及其所属类别，将结果加入总字典sentences中
@@ -163,25 +183,21 @@ for file in file_list:
             except:
                 print('数据异常')
             # 在contents的各个text里根据正则表达式找匹配的句子及其所属类别
-            for content in line['contents']:
-                try:
-                    find_sentence(content['text'])
-                except:
-                    print('数据异常')
+            # 读取百度百科contents
+            # for content in line['contents']:
+            #     try:
+            #         find_sentence(content['text'])
+            #     except:
+            #         print('数据异常')
+
+            # 读取互动百科contents
+            try:
+                find_sentence(line['contents'])
+            except:
+                print('数据异常')
         json_file.close()
 
 # 将结果保存在文件里
 save_output()
 # 关闭所有输出结果的文件
 close_output()
-
-
-res = [('胰岛\n素可以', '治疗', '糖\n尿病'), ('同时各类、降压\n药能', '医治', '高血压')]
-print(res)
-new = list()
-for sentence in res:
-    a = list()
-    for substring in sentence:
-        a.append(substring.replace('\n', ' '))
-    new.append(a)
-print(new)
