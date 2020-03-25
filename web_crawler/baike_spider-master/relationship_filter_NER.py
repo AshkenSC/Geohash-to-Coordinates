@@ -407,6 +407,7 @@ load_entity_names()
 # 判断关系中的实体名是否在实体库中
 # 若合法，则对关系作最后处理，并保存结果
 valid_relations_file = open(os.path.join(PATH, 'relations', CATEGORY + '_relation_final.txt'), 'w', encoding='utf-8')
+valid_relations_set = set()     # 用于去重
 for pair in relations:
     # 找出选入三元组的实体
     front_entity, back_entity = pick_entity(pair)
@@ -415,12 +416,18 @@ for pair in relations:
         # 对关系作最后处理
         current_category, front_entity, back_entity = post_process(CATEGORY, front_entity, back_entity)
         # 保存最终结果
+        # 查重
+        current_pair = (front_entity, back_entity)
+        if current_pair in valid_relations_set:
+            continue
+        else:
+            valid_relations_set.add(current_pair)
         # 写head和tail的所属类别
         valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
         # 写三元组
         valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(current_category, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
     else:
-        print(('关系中出现的实体不在实体库中：' + front_entity[0] + current_category + back_entity[0]).encode('gbk', 'ignore').decode('gbk'))
+        print(('关系中出现的实体不在实体库中：' + front_entity[0] + CATEGORY + back_entity[0]).encode('gbk', 'ignore').decode('gbk'))
 valid_relations_file.close()
 
 # 关闭数据源
