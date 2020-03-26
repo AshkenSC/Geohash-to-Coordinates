@@ -1,5 +1,9 @@
 # 从文本中按照正则表达式提取不同类别的关系句子
 
+# 抽取不同来源时注意：
+# （1）修改读取路径要修改2处！
+# （2）不同来源的抽取句子代码也要修改！
+
 '''
 rel == 治疗:   归为 可医治
 治疗，head == 细菌，tail == 症状（如肉毒杆菌治疗肌肉痉挛）
@@ -65,13 +69,14 @@ regex_dict = {
 # 保存所有找到的句子及其类别的字典，格式为sentence:type
 sentences_dict = dict()
 # 保存结果的文件
-cure_file = open(r'f:\Projects\corona\hudong_data\sentences\cure.txt', 'w', encoding='utf-8')
-recommend_drug_file = open(r'f:\Projects\corona\hudong_data\sentences\recommend_drug.txt', 'w', encoding='utf-8')
-cause_file = open(r'f:\Projects\corona\hudong_data\sentences\cause.txt', 'w', encoding='utf-8')
-detect_file = open(r'f:\Projects\corona\hudong_data\sentences\detect.txt', 'w', encoding='utf-8')
-disease_file = open(r'f:\Projects\corona\hudong_data\sentences\disease.txt', 'w', encoding='utf-8')
-inspect_file = open(r'f:\Projects\corona\hudong_data\sentences\inspect.txt', 'w', encoding='utf-8')
-related_file = open(r'f:\Projects\corona\hudong_data\sentences\related.txt', 'w', encoding='utf-8')
+PATH = r'f:\Projects\corona\hudong_data\sentences'
+cure_file = open(os.path.join(PATH, 'cure.txt'), 'w', encoding='utf-8')
+recommend_drug_file = open(os.path.join(PATH,'recommend_drug.txt'), 'w', encoding='utf-8')
+cause_file = open(os.path.join(PATH, 'cause.txt'), 'w', encoding='utf-8')
+detect_file = open(os.path.join(PATH, 'detect.txt'), 'w', encoding='utf-8')
+disease_file = open(os.path.join(PATH, 'disease.txt'), 'w', encoding='utf-8')
+inspect_file = open(os.path.join(PATH, 'inspect.txt'), 'w', encoding='utf-8')
+related_file = open(os.path.join(PATH, 'related.txt'), 'w', encoding='utf-8')
 
 # 找到给定文本里所有符合规则的句子
 # 返回一个字典（sentence:type），sentence用于保存句子，type用于保存sentence对应的句子类别
@@ -96,6 +101,9 @@ def find_sentence(text):
             if stripped_sentence[0] == '合理' and stripped_sentence[2] == '者':
                 continue
             if stripped_sentence[2] == '互动百科的服务':
+                continue
+            if len(stripped_sentence[0]) <= 2 or len(stripped_sentence[2]) <= 2:
+            # 舍弃前后长度太短的句子
                 continue
 
             # 将句子存入sentences里
@@ -150,10 +158,10 @@ def save_output():
             inspect_file.write('\n')
         if re.match(r'伴有|常有|典型|并发|继发|出现|引起|导致|常伴有|表现为|并发症|是一种|常见', entry[1]) is not None:
             for substring in entry:
-                inspect_file.write(substring)
+                related_file.write(substring)
                 if substring != entry[-1]:
-                    inspect_file.write(';;;;ll;;;;')
-            inspect_file.write('\n')
+                    related_file.write(';;;;ll;;;;')
+            related_file.write('\n')
 
 # 关闭所有保存句子的文件
 def close_output():
@@ -166,6 +174,10 @@ def close_output():
 
 
 file_list = list()  # 保存当前目录下的文件列表
+# hudong f:\Projects\corona\hudong_data\json
+# baidu d:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\classified-merged\classified-merged-json\v2
+# 记得路径要改两处！
+# 记得下面读取文件代码要对应修改！！
 for dir_path, dir_names, file_names in os.walk(r'f:\Projects\corona\hudong_data\json'):
     for file_name in file_names:
         file_list.append(os.path.join(dir_path, file_name))
@@ -174,7 +186,7 @@ for dir_path, dir_names, file_names in os.walk(r'f:\Projects\corona\hudong_data\
 for file in file_list:
     if file.endswith('.json'):
         print('正在读取文件：' + repr(file).encode('gbk', 'ignore').decode('gbk'))
-        json_file = open(os.path.join('f:\Projects\corona\hudong_data\json', file), 'r', encoding='utf-8')
+        json_file = open(os.path.join(r'f:\Projects\corona\hudong_data\json', file), 'r', encoding='utf-8')
         for json_line in json_file:
             line = json.loads(json_line)
             # 在summary里根据正则表达式找匹配的句子及其所属类别，将结果加入总字典sentences中
