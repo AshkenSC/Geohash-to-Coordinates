@@ -62,8 +62,10 @@ import os
 import re
 import json
 
-PATH = r'd:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\sentences\hudong'
-CATEGORY = 'inspect'
+# 句子和对应的标记要放在同一个文件夹下，命名格式为"类别.txt", "类别_NER.json"
+#PATH = r'd:\Project\Python\PythonGadgets\web_crawler\baike_spider-master\sentences\hudong'
+PATH = r'f:\Projects\corona\baidu_data\sentences'
+CATEGORY = 'cause'
 
 # 找出单个半句中的所有实体
 # 读入的参数：短句和对应的标记
@@ -180,11 +182,10 @@ def get_verb(category, tag):
         return '推荐药物'
     if category == 'cause':
         return '引起'
-    if category == 'related':
-        if tag == 'B-DIS':
-            return '相似疾病'
-        elif tag == 'B-SYM':
-            return '相似症状'
+    if category == 'related_disease':
+        return '相似疾病'
+    if category == 'related_symptom':
+        return '相似症状'
     if category == 'detect':
         return '检测'
     if category == 'disease':
@@ -239,7 +240,6 @@ def load_entity_names():
     for alias_list in alias_disease_json.values():
         for alias in alias_list:
             disease_set.add(alias)
-    disease_set.remove('无') # 删除错误的别名
     alias_drug_json = json.load(alias_drug)
     for alias_list in alias_drug_json.values():
         for alias in alias_list:
@@ -249,6 +249,8 @@ def load_entity_names():
         for alias in alias_list:
             virus_set.add(alias)
 
+    # TODO: 去除垃圾实体
+
     disease.close()
     drug.close()
     bacteria.close()
@@ -256,6 +258,10 @@ def load_entity_names():
 
 # 根据实体名确认是否是正确关系
 def are_valid_entities(category, front_entity, back_entity):
+    if front_entity[0] == back_entity[0]:
+    # 避免头尾相等
+        return False
+
     if category == 'cure':
         if front_entity[0] in bacteria_set \
         and back_entity[0] in (disease_set | symptom_set):
@@ -284,6 +290,8 @@ def are_valid_entities(category, front_entity, back_entity):
         if front_entity[0] in specialty_set \
         and back_entity[0] in (disease_set | symptom_set | virus_set | bacteria_set):
             return True
+
+    return False
 
 # 对输出结果的最后处理
 # 1）将cure转为推荐药物（重命名关系）
@@ -428,7 +436,10 @@ for pair in relations:
         # 写head和tail的所属类别
         valid_relations_file.write(get_type(front_entity[1]) + ';;;;ll;;;;' + get_type(back_entity[1]) + ':')
         # 写三元组
-        valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(current_category, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
+        try:
+            valid_relations_file.write(front_entity[0] + ';;;;ll;;;;' + get_verb(current_category, front_entity[1]) + ';;;;ll;;;;' + back_entity[0] + '\n')
+        except:
+            print('error')
     else:
         print(('关系中出现的实体不在实体库中：' + front_entity[0] + CATEGORY + back_entity[0]).encode('gbk', 'ignore').decode('gbk'))
 valid_relations_file.close()
