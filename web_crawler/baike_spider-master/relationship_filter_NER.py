@@ -249,7 +249,12 @@ def load_entity_names():
         for alias in alias_list:
             virus_set.add(alias)
 
-    # TODO: 去除垃圾实体
+    # 删除错误的实体名或别名
+    disease_set.remove('无')
+    disease_set.remove('病')
+    disease_set.remove('淋')
+    disease_set.remove('疫')
+    disease_set.remove('消')
 
     disease.close()
     drug.close()
