@@ -1,18 +1,27 @@
-# 从HTML页中提取JSON格式的数据
+# 将XML分割为HTML，再导出成JSON格式的数据
+# 注意，根据XML来源不同（互动or百度），需要修改调用parse函数里不同的函数get_new_data_baidu或get_new_data_hudong
+# 在调用导出为JSON的函数write_file时，第三个参数需修改为自己提取的html页面数量
 
 import os
 from bs4 import BeautifulSoup
 import json
 import re
 
-SOURCE = r"f:\Projects\corona\hudong_data\html\symptom"
-DEST = r'f:\Projects\corona\hudong_data\json\symptom.json'
+# 分割XML文件的函数split_page的参数
+# XML_SOURCE_FILE: 原始XML文件的路径
+# HTML_DEST_FOLDER: 分割后的HTML存放的文件夹
+XML_SOURCE_FILE = r'f:\Projects\corona\hudong_data\xml\entity_pages_1.xml'
+HTML_DEST_FOLDER = r"f:\Projects\corona\hudong_data\html\test"
+
+# 从HTML文件提取纯文本信息并保存为JSON格式的函数write_file的参数
+# 第一个参数是HTML_DEST_FOLDER，已经在上面给出
+# JSON_DEST_FILE: 最终生成的JSON文件路径
+JSON_DEST_FILE = r'f:\Projects\corona\hudong_data\json\bacteria_disease_drug_virus.json'
 
 # 1. 将XML文件分割为page并单独保存
-
 def split_page(file_path, dest_path):
     pages = list()
-    xml = open(file_path + r'\entity_pages_12.xml','r', encoding='utf-8')
+    xml = open(file_path,'r', encoding='utf-8')
     isReadingPage = False
     page_num = 1
     for line in xml:
@@ -28,7 +37,7 @@ def split_page(file_path, dest_path):
             page_num += 1
     xml.close()
 
-    page_num = 81844
+    page_num = 1
     for page in pages:
         f = open(os.path.join(dest_path, '{}.htm'.format(page_num)), 'w', encoding='utf-8')
         for line in page:
@@ -38,8 +47,8 @@ def split_page(file_path, dest_path):
         page_num += 1
     return page_num
 
-# 2. 规格化提取每个page的信息，保存为字典
-def get_new_data(soup, html):
+# 2. 从百度百科的HTML中提取信息，保存为字典
+def get_new_data_baidu(soup, html):
     res_data = {}
 
     # get title
@@ -89,7 +98,7 @@ def get_new_data(soup, html):
 
     return res_data
 
-# 2. 从互动百科的HTML中提取信息
+# 2. 从互动百科的HTML中提取信息，保存为字典
 def get_new_data_hudong(soup, html):
     res_data = {}
 
@@ -107,8 +116,13 @@ def get_new_data_hudong(soup, html):
 
     # get contents
     # TODO 提取正文的纯文本
-    nodes = soup.find_all('div', class_='content_h2')
-    res_data['contents'] = _get_contents(nodes)
+    try:
+        nodes = soup.find_all('p')
+        res_data['contents'] = _get_hudong_contents(nodes)
+    except:
+        print('没有正文')
+    #res_data['contents'] = _get_contents(nodes)
+
 
     # get labels
     # res_data['labels'] = []
@@ -124,8 +138,8 @@ def get_new_data_hudong(soup, html):
 
 def parse(html):
     soup = BeautifulSoup(html, 'html.parser')
-    # new_data = get_new_data(soup, html) # 获取百度页面信息
-    new_data = get_new_data_hudong(soup, html)  # 获取互动页面信息
+    new_data = get_new_data_baidu(soup, html) # 获取百度页面信息
+    #new_data = get_new_data_hudong(soup, html)  # 获取互动页面信息
     return new_data
 
 def write_file(source_path, dest_path, page_num):
@@ -192,5 +206,17 @@ def _get_contents(nodes):
                     contents.append({'title': _title, 'text': _content.strip()})
     return contents
 
-#page_num = split_page(SOURCE, DEST)
-write_file(SOURCE, DEST, 1900)
+def _get_hudong_contents(nodes):
+    final_string = ""
+    for node in nodes:
+        final_string += node.text
+    final_string = final_string.replace('\n', ' ')
+    final_string = final_string.replace('\t', ' ')
+    return final_string
+
+if __name__ == '__main__':
+    # 将XML分割为HTML
+    page_num = split_page(XML_SOURCE_FILE, HTML_DEST_FOLDER)
+
+    # 从HTML中提取数据并保存为JSON格式，第三个参数是所爬取到的HTML页面的数量
+    #write_file(HTML_DEST_FOLDER, HTML_DEST_FOLDER, 82000)
