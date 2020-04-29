@@ -1,4 +1,6 @@
-# 属性提取 step2：从文本中匹配内容，对第一步进行补全
+# 属性提取 step2：从文本（summary和正文）中匹配内容，对step 1的结果进行补全
+# 在文本里根据正则表达式找到匹配语句，并据此补全
+# 若仍无法找到匹配的语句，则属性值设为NULL
 
 import json
 import re
@@ -61,7 +63,7 @@ regex_drug = {
 
 REGEX = regex_virus  # 使用哪组正则表达式匹配
 ENTITIES = 'classified-merged/organized_entities/v2/updated_virus.json'      # 待补全的实体
-CONTENT = 'classified-merged/classified-merged-json/v1/others.json0'              # 数据源
+CONTENT = 'classified-merged/classified-merged-json/v1/others.json'              # 数据源
 DEST = 'classified-merged/organized_entities/v2/updated_virus2.json'            # 补全后存储路径
 
 # 在文本里根据正则表达式找到匹配语句，如找不到则返回字符串NULL
