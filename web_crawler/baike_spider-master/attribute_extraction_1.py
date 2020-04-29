@@ -1,18 +1,25 @@
 # 属性提取 step1：从三元组中提取
 
 import json
-SOURCE = 'classified-merged/triples_fused_v3/total-others.txt' # 三元组来源，设为总集三元组文件，一般不用修改
-DEST = 'classified-merged/organized_entities/v2/organized_disease.json'   # 输出路径
-NAMES = 'classified-merged/pure_names/organized/disease_names2.txt'   # 名单路径
-NOT_FOUND = 'classified-merged/organized_entities/v2/not_found_disease2.txt'  # 未找到的词条
+
+# 路径变量设置
+# ----------
+# 三元组来源，设为总集三元组文件，一般不用修改
+SOURCE = 'classified-merged/triples_fused_v3/total-others.txt'
+# 输出路径
+DEST = 'classified-merged/organized_entities/v2/organized_disease.json'
+# 实体名单路径
+NAMES = 'classified-merged/pure_names/organized/disease_names2.txt'
+# 未找到的词条记录在该文件里
+NOT_FOUND = 'classified-merged/organized_entities/v2/not_found_disease2.txt'
 
 
 # 症状
-# alias = {\
-# '名称': ['中文名','中文名称','中医学名','中文学名','别名','又称','别称','名称'],\
-# '病因':['常见病因','主要病因','病因'],\
-# '发病部位':['发病部位','常见发病部位']\
-# }
+alias = {\
+'名称': ['中文名','中文名称','中医学名','中文学名','别名','又称','别称','名称'],\
+'病因':['常见病因','主要病因','病因'],\
+'发病部位':['发病部位','常见发病部位']\
+}
 
 
 # 细菌
@@ -35,15 +42,15 @@ NOT_FOUND = 'classified-merged/organized_entities/v2/not_found_disease2.txt'  # 
 # }
 
 # 疾病
-alias = {\
-    '名称':['中文名','中文名称','中医学名','中文学名','别名','又称','别称','名称'],\
-    '医学专科':['就诊科室'],\
-    '发病部位':['发病部位','常见发病部位'],\
-    '临床表现':['临床表现','临床症状','症状','常见症状','主要症状'],\
-    '常见病因':['常见病因','主要病因','患病原因','发病原因'],\
-    '传染性':['传染性'],\
-    '病原类型':['病原类型','病原','病原中文名','病原类别']\
-}
+# alias = {\
+#     '名称':['中文名','中文名称','中医学名','中文学名','别名','又称','别称','名称'],\
+#     '医学专科':['就诊科室'],\
+#     '发病部位':['发病部位','常见发病部位'],\
+#     '临床表现':['临床表现','临床症状','症状','常见症状','主要症状'],\
+#     '常见病因':['常见病因','主要病因','患病原因','发病原因'],\
+#     '传染性':['传染性'],\
+#     '病原类型':['病原类型','病原','病原中文名','病原类别']\
+# }
 
 # 药品
 # alias = {
@@ -123,7 +130,8 @@ for entry in output.items():
 print(len(output.items()))
 
 dest = open(DEST, 'w', encoding='utf-8')
-json.dump(output, dest, indent=2, ensure_ascii=False)   # 设置参数确保dump后不是unicode编码
+# ensure_ascii参数，用于确保dump后中文不会以unicode编码形式保存
+json.dump(output, dest, indent=2, ensure_ascii=False)
 dest.close()
 print('数据导出完成')
 
