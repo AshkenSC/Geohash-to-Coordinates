@@ -23,4 +23,5 @@ def extract_html(source_path, dest_path):
         page_num += 1
     source_file.close()
 
-extract_html(SOURCE, DEST)
+if __name__ == '__main__':
+    extract_html(SOURCE, DEST)
