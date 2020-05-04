@@ -38,7 +38,7 @@ class Node:
 
     # calculate f value:
     def calculate_f(self):
-        self.f = g + h
+        self.f = self.g + self.h
 
 # find the node with minimum F and process it
 def find_min_F_node(open_list):
@@ -91,10 +91,10 @@ def load_map(input_file):
     all_nodes = list()
     size = int(input_file.readline())
     i = 0
-    j = 0
     for line in input_file:
         line = line.strip('\n')
         new_row = list()
+        j = 0
         for character in line:
             new_node = Node((i, j), character)
             new_row.append(new_node)
@@ -165,9 +165,9 @@ def main(input_file):
     while current_node != start:
         print(current_node.pos)
         current_node = current_node.father
-
+    print(current_node.pos)
 
 if __name__ == '__main__':
-    with open('INPUT/input1.txt', 'r', encoding='utf-8') as input_file:
+    with open('INPUT/input2.txt', 'r', encoding='utf-8') as input_file:
         main(input_file)
 
