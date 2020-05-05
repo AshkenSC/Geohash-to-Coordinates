@@ -58,6 +58,8 @@ def get_neighbor_nodes(all_nodes, node):
         for j in range(node.pos[1] - 1, node.pos[1] + 2):
             if i == node.pos[0] and j == node.pos[1]:
                 continue
+            if i < 0 or j < 0:
+                continue
             else:
                 # set neighbor nodes' father as current node
                 all_nodes[i][j].father = node
@@ -112,7 +114,7 @@ def main(input_file):
     # locate start and goal
     start, goal = find_start_and_goal(all_nodes)
 
-    # open list and close list
+    # define open list and close list
     open_list = list()
     close_list = list()
 
