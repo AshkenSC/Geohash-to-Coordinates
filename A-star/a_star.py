@@ -71,10 +71,10 @@ def get_neighbor_nodes(all_nodes, node):
 def calculate_new_g(node, new_father):
     if new_father.pos[0] - node.pos[0] + new_father.pos[1] - node.pos[1] > 1:
         # current node is on the diagonal of father node
-        new_g = new_father.pos + 14
+        new_g = new_father.g + 14
     else:
         # current node is not on the diagonal of father node
-        new_g = new_father.pos + 10
+        new_g = new_father.g + 10
     return new_g
 
 # find start and goal in all nodes
@@ -150,7 +150,7 @@ def main(input_file):
                     open_list.remove(neighbor_node)
                     close_list.append(neighbor_node)
                     # check neighbor node's neighbors
-                    for neighbors_neighbor in get_neighbor_nodes(neighbor_node):
+                    for neighbors_neighbor in get_neighbor_nodes(all_nodes, neighbor_node):
                         if neighbors_neighbor.is_reachable():
                             # check whether it is a better path (use g value to judge)
                             new_g = calculate_new_g(neighbors_neighbor, neighbor_node)
