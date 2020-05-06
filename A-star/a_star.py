@@ -128,6 +128,7 @@ def main(input_file):
         # 2(a). traverse open list, find the node with minimum F to process it
         current_node = find_min_F_node(open_list)
         # 2(b). move this node to close list
+        open_list.remove(current_node)
         close_list.append(current_node)
         # 2(c). check current node's neighbor nodes
         neighbor_nodes = get_neighbor_nodes(all_nodes, current_node)
@@ -144,22 +145,19 @@ def main(input_file):
                     # add it into open list
                     open_list.append(neighbor_node)
                     neighbor_node.father = current_node
-                # if the node is in open list
+                # if the node is already in open list
                 else:
                     # move it from open list to close list
                     open_list.remove(neighbor_node)
                     close_list.append(neighbor_node)
-                    # check neighbor node's neighbors
-                    for neighbors_neighbor in get_neighbor_nodes(all_nodes, neighbor_node):
-                        if neighbors_neighbor.is_reachable():
-                            # check whether it is a better path (use g value to judge)
-                            new_g = calculate_new_g(neighbors_neighbor, neighbor_node)
-                            # if it is a better path, set current_neighbor as its father node
-                            if new_g < neighbors_neighbor.g:
-                                neighbors_neighbor.father = neighbor_node
-                                neighbors_neighbor.calculate_g()
-                                neighbors_neighbor.calculate_h()
-                                neighbors_neighbor.calculate_f()
+                    # check whether it is a better path
+                    new_g = calculate_new_g(neighbor_node, current_node)
+                    # if it is a better path, set current_neighbor as its father node
+                    if new_g < neighbor_node.g:
+                        neighbor_node.father = current_node
+                        neighbor_node.calculate_g()
+                        neighbor_node.calculate_h()
+                        neighbor_node.calculate_f()
 
     # 3. save the path
     # move from goal to its father, and father's father... reverse it and get the path
