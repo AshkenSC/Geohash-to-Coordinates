@@ -58,11 +58,14 @@ def get_neighbor_nodes(all_nodes, node):
         for j in range(node.pos[1] - 1, node.pos[1] + 2):
             if i == node.pos[0] and j == node.pos[1]:
                 continue
-            if i < 0 or j < 0:
+            if i < 0 or j < 0 or i >= len(all_nodes) or j >= len(all_nodes):
                 continue
             else:
                 # set neighbor nodes' father as current node
-                all_nodes[i][j].father = node
+                try:
+                    all_nodes[i][j].father = node
+                except:
+                    print('error')
                 # add to neighbor nodes list
                 neighbor_nodes.append(all_nodes[i][j])
     return neighbor_nodes
@@ -85,9 +88,9 @@ def find_start_and_goal(all_nodes):
                 start = node
                 continue
             if node.status == 'G':
-                end = node
+                goal = node
                 continue
-    return start, end
+    return start, goal
 
 def load_map(input_file):
     all_nodes = list()
@@ -127,6 +130,7 @@ def main(input_file):
     while goal not in open_list and len(open_list) != 0:
         # 2(a). traverse open list, find the node with minimum F to process it
         current_node = find_min_F_node(open_list)
+        print(current_node.pos)
         # 2(b). move this node to close list
         open_list.remove(current_node)
         close_list.append(current_node)
@@ -163,11 +167,14 @@ def main(input_file):
     # move from goal to its father, and father's father... reverse it and get the path
     current_node = goal
     while current_node != start:
-        print(current_node.pos)
+        try:
+            print(current_node.pos)
+        except:
+            print('error')
         current_node = current_node.father
     print(current_node.pos)
 
 if __name__ == '__main__':
-    with open('INPUT/input2.txt', 'r', encoding='utf-8') as input_file:
+    with open('INPUT/input3.txt', 'r', encoding='utf-8') as input_file:
         main(input_file)
 
