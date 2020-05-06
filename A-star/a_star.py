@@ -34,7 +34,7 @@ class Node:
     # calculate h value
     # use Manhattan method to estimate
     def calculate_h(self, goal):
-        self.h = (goal.pos[0] - self.pos[0] + goal.pos[1] - self.pos[1]) * 10
+        self.h = (abs(goal.pos[0] - self.pos[0]) + abs(goal.pos[1] - self.pos[1])) * 10
 
     # calculate f value:
     def calculate_f(self):
@@ -160,7 +160,7 @@ def main(input_file):
                     if new_g < neighbor_node.g:
                         neighbor_node.father = current_node
                         neighbor_node.calculate_g()
-                        neighbor_node.calculate_h()
+                        neighbor_node.calculate_h(goal)
                         neighbor_node.calculate_f()
 
     # 3. save the path
