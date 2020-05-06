@@ -102,6 +102,7 @@ def load_map(input_file):
         i += 1
     return all_nodes, size
 
+
 # check if a neighbor node is reachable
 def is_reachable(current_node, neighbor_nodes, neighbor_node):
     if neighbor_node.status == 'X':
