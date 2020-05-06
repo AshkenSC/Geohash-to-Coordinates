@@ -15,13 +15,6 @@ class Node:
         self.OPEN = dict()
         self.CLOSED = dict()
 
-    # check if a node is reachable
-    def is_reachable(self):
-        if self.status == 'X':
-            return False
-        else:
-            return True
-
     # calculate g value
     def calculate_g(self):
         if self.father.pos[0] - self.pos[0] + self.father.pos[1] - self.pos[1] > 1:
@@ -62,10 +55,10 @@ def get_neighbor_nodes(all_nodes, node):
                 continue
             else:
                 # set neighbor nodes' father as current node
-                try:
-                    all_nodes[i][j].father = node
-                except:
-                    print('error')
+                # try:
+                #     all_nodes[i][j].father = node
+                # except:
+                #     print('error')
                 # add to neighbor nodes list
                 neighbor_nodes.append(all_nodes[i][j])
     return neighbor_nodes
@@ -92,6 +85,7 @@ def find_start_and_goal(all_nodes):
                 continue
     return start, goal
 
+# load map from file
 def load_map(input_file):
     all_nodes = list()
     size = int(input_file.readline())
@@ -107,6 +101,20 @@ def load_map(input_file):
         all_nodes.append(new_row)
         i += 1
     return all_nodes, size
+
+# check if a neighbor node is reachable
+def is_reachable(current_node, neighbor_nodes, neighbor_node):
+    if neighbor_node.status == 'X':
+        return False
+    elif current_node.pos[0] != neighbor_node.pos[0] and current_node.pos[1] != neighbor_node.pos[1]:
+    # consider neighbor nodes on diagonal
+        for node in neighbor_nodes:
+            if abs(neighbor_node.pos[0] - node.pos[0]) + abs(neighbor_node.pos[1] - node.pos[1]) == 1:
+                if node.status == 'X':
+                    return False
+        return True
+    else:
+        return True
 
 # main function
 def main(input_file):
@@ -130,7 +138,13 @@ def main(input_file):
     while goal not in open_list and len(open_list) != 0:
         # 2(a). traverse open list, find the node with minimum F to process it
         current_node = find_min_F_node(open_list)
-        print(current_node.pos)
+
+        # TEST
+        # print(current_node.pos)
+        # if current_node.pos == (0, 1):
+        #     print(current_node.pos)
+        # TEST
+
         # 2(b). move this node to close list
         open_list.remove(current_node)
         close_list.append(current_node)
@@ -138,23 +152,25 @@ def main(input_file):
         neighbor_nodes = get_neighbor_nodes(all_nodes, current_node)
         for neighbor_node in neighbor_nodes:
             # if the node is unreachable or it's in close list, ignore it
-            if neighbor_node.is_reachable() and neighbor_node not in close_list:
+            if is_reachable(current_node, neighbor_nodes, neighbor_node) and neighbor_node not in close_list:
                 # if the node is not in open list
-                # and set current_node of this node's father
+                # add it into open list and set current_node of this node's father
                 if neighbor_node not in open_list:
+                    # add it into open list
+                    open_list.append(neighbor_node)
+                    # set current_node of this node's father
+                    neighbor_node.father = current_node
                     # calculate f, g, h of the node
                     neighbor_node.calculate_g()
                     neighbor_node.calculate_h(goal)
                     neighbor_node.calculate_f()
-                    # add it into open list
-                    open_list.append(neighbor_node)
-                    neighbor_node.father = current_node
                 # if the node is already in open list
                 else:
                     # move it from open list to close list
-                    open_list.remove(neighbor_node)
-                    close_list.append(neighbor_node)
+                    #open_list.remove(neighbor_node)
+                    #close_list.append(neighbor_node)
                     # check whether it is a better path
+
                     new_g = calculate_new_g(neighbor_node, current_node)
                     # if it is a better path, set current_neighbor as its father node
                     if new_g < neighbor_node.g:
@@ -166,13 +182,17 @@ def main(input_file):
     # 3. save the path
     # move from goal to its father, and father's father... reverse it and get the path
     current_node = goal
+    path_stack = list()
     while current_node != start:
         try:
-            print(current_node.pos)
+            path_stack.append(current_node.pos)
+            current_node = current_node.father
         except:
-            print('error')
-        current_node = current_node.father
-    print(current_node.pos)
+            print('error or NULL')
+            break
+    if len(path_stack) > 1:
+        while len(path_stack) > 0:
+            print(path_stack.pop())
 
 if __name__ == '__main__':
     with open('INPUT/input3.txt', 'r', encoding='utf-8') as input_file:
