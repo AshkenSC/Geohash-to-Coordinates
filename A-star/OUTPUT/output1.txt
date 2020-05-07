@@ -1,0 +1,16 @@
+current node: (1, 0)
+children: [(1, 1)]
+father: (0, 0)
+
+current node: (1, 1)
+children: [(1, 2)]
+father: (1, 0)
+
+current node: (1, 2)
+children: [(0, 2), (2, 2)]
+father: (1, 1)
+
+current node: (2, 2)
+children: []
+father: (1, 2)
+
