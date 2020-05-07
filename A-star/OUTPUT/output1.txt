@@ -1,16 +1,104 @@
-current node: (1, 0)
-children: [(1, 1)]
-father: (0, 0)
+SRRXG
+RXRXR
+RRRXR
+XRXRR
+RRRRX
 
-current node: (1, 1)
-children: [(1, 2)]
-father: (1, 0)
+S 0
 
-current node: (1, 2)
-children: [(0, 2), (2, 2)]
-father: (1, 1)
+SRRXG
+*XRXR
+RRRXR
+XRXRR
+RRRRX
 
-current node: (2, 2)
-children: []
-father: (1, 2)
+S-R 2
+
+SRRXG
+RXRXR
+*RRXR
+XRXRR
+RRRRX
+
+S-R-R 4
+
+SRRXG
+RXRXR
+R*RXR
+XRXRR
+RRRRX
+
+S-R-R-D 6
+
+SRRXG
+RXRXR
+RRRXR
+X*XRR
+RRRRX
+
+S-R-R-D-R 8
+
+SRRXG
+RXRXR
+RRRXR
+XRXRR
+R*RRX
+
+S-R-R-D-R-R 10
+
+SRRXG
+RXRXR
+RRRXR
+XRXRR
+RR*RX
+
+S-R-R-D-R-R-D 12
+
+SRRXG
+RXRXR
+RRRXR
+XRXRR
+RRR*X
+
+S-R-R-D-R-R-D-D 14
+
+SRRXG
+RXRXR
+RRRXR
+XRX*R
+RRRRX
+
+S-R-R-D-R-R-D-D-L 16
+
+SRRXG
+RXRXR
+RRRXR
+XRXR*
+RRRRX
+
+S-R-R-D-R-R-D-D-L-D 18
+
+SRRXG
+RXRXR
+RRRX*
+XRXRR
+RRRRX
+
+S-R-R-D-R-R-D-D-L-D-L 20
+
+SRRXG
+RXRX*
+RRRXR
+XRXRR
+RRRRX
+
+S-R-R-D-R-R-D-D-L-D-L-L 22
+
+SRRX*
+RXRXR
+RRRXR
+XRXRR
+RRRRX
+
+S-R-R-D-R-R-D-D-L-D-L-L-L 24
 
