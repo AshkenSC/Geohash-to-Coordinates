@@ -1,0 +1,56 @@
+current node: (0, 1)
+children: [(0, 2)]
+father: (0, 0)
+
+current node: (0, 2)
+children: [(1, 2)]
+father: (0, 1)
+
+current node: (1, 2)
+children: [(2, 2)]
+father: (0, 2)
+
+current node: (2, 2)
+children: [(2, 1)]
+father: (1, 2)
+
+current node: (2, 1)
+children: [(3, 1)]
+father: (2, 2)
+
+current node: (3, 1)
+children: [(4, 1)]
+father: (2, 1)
+
+current node: (4, 1)
+children: [(4, 0), (4, 2)]
+father: (3, 1)
+
+current node: (4, 2)
+children: [(4, 3)]
+father: (4, 1)
+
+current node: (4, 3)
+children: [(3, 3)]
+father: (4, 2)
+
+current node: (3, 3)
+children: [(3, 4)]
+father: (4, 3)
+
+current node: (3, 4)
+children: [(2, 4)]
+father: (3, 3)
+
+current node: (2, 4)
+children: [(1, 4)]
+father: (3, 4)
+
+current node: (1, 4)
+children: [(0, 4)]
+father: (2, 4)
+
+current node: (0, 4)
+children: []
+father: (1, 4)
+
