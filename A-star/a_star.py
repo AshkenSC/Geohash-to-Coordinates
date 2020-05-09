@@ -35,7 +35,7 @@ class Node:
         self.parent = None
         self.children = list()
         # the following are used for console output
-        self.id = 0
+        self.id = -1
         self.operator = ''
         self.path = ''
 
@@ -77,24 +77,25 @@ class Node:
     # calculate operator
     def get_operator(self, start):
         if self == start:
-            return ''
+            return 'S'
         direction = (self.pos[0] - self.parent.pos[0], self.pos[1] - self.parent.pos[1])
         if direction == (1, 0):
-            return 'R'
+            return 'D'
         elif direction == (1, 1):
             return 'RD'
         elif direction == (0, 1):
-            return 'D'
+            return 'R'
         elif direction == (-1, 1):
-            return 'LD'
+            return 'RU'
         elif direction == (-1, 0):
-            return 'L'
+            return 'U'
         elif direction == (-1, -1):
             return 'LU'
         elif direction == (0, -1):
-            return 'U'
+            return 'L'
         elif direction == (1, -1):
-            return 'RU'
+            return 'LD'
+
 
 
 # read map from file and get map file object
@@ -193,7 +194,7 @@ def get_current_step_map(all_nodes, current_node):
     current_map = ''
     for row in all_nodes:
         for node in row:
-            if node == current_node and node.status != 'S':
+            if node == current_node and node.status == 'R':
                 current_map += '*'
             else:
                 current_map += node.status
@@ -205,22 +206,39 @@ def update_action_list(start, action_list, node):
     if node == start:
         return 'S'
     direction = (node.pos[0] - node.parent.pos[0], node.pos[1] - node.parent.pos[1])
+    # if direction == (1, 0):
+    #     return action_list + '-R'
+    # elif direction == (1, 1):
+    #     return action_list + '-RD'
+    # elif direction == (0, 1):
+    #     return action_list + '-D'
+    # elif direction == (-1, 1):
+    #     return action_list + '-LD'
+    # elif direction == (-1, 0):
+    #     return action_list + '-L'
+    # elif direction == (-1, -1):
+    #     return action_list + '-LU'
+    # elif direction == (0, -1):
+    #     return action_list + '-U'
+    # elif direction == (1, -1):
+    #     return action_list + '-RU'
+
     if direction == (1, 0):
-        return action_list + '-R'
+        return action_list + '-D'
     elif direction == (1, 1):
         return action_list + '-RD'
     elif direction == (0, 1):
-        return action_list + '-D'
+        return action_list + '-R'
     elif direction == (-1, 1):
-        return action_list + '-LD'
+        return action_list + '-RU'
     elif direction == (-1, 0):
-        return action_list + '-L'
+        return action_list + '-U'
     elif direction == (-1, -1):
         return action_list + '-LU'
     elif direction == (0, -1):
-        return action_list + '-U'
+        return action_list + '-L'
     elif direction == (1, -1):
-        return action_list + '-RU'
+        return action_list + '-LD'
 
 # get accumulated cost
 def update_cost(start, cost, node):
@@ -262,34 +280,66 @@ def get_result_string(start, goal, all_nodes):
         action_list = update_action_list(start, action_list, path_nodes[i])
         # get accumulated cost
         cost = update_cost(start, cost, path_nodes[i])
+
         solution += action_list + ' ' +str(cost) + '\n\n'
 
     return solution
 
 # console output
 def console_output(current_node, start, open_list, close_list, expan_order):
-    '''
-    第一行：路径从S开始，路径后面跟从父节点走来的操作
-    第二行：路径从S开始，路径后面跟从父节点走来的操作
-    CLOSED: 只跟结点ID，和父节点操作，不写路径
-    '''
 
     # build current node's path
     current_node.path = current_node.calculate_path(start)
     current_node.operator = current_node.get_operator(start)
 
     # node identifier, expansion order, g, h, f
-    print('N'+str(current_node.id)+':'+current_node.path, end='')
-    print(current_node.operator, str(expan_order), str(current_node.g), str(current_node.h), str(current_node.f))
+    print('N'+str(current_node.id)+':'+current_node.path, end=' ')
+    if current_node == start:
+        print(str(expan_order), str(current_node.g), str(current_node.h), str(current_node.f))
+    else:
+        print(current_node.operator, str(expan_order), str(current_node.g), str(current_node.h), str(current_node.f))
+
 
     # children
-    # Children: {N1:S-R, N2:S-RD, N3:S-D }
+    print('Children: {', end='')
+    for i in range(len(current_node.children)):
+        # calculate current children's path
+        current_node.children[i].path = current_node.children[i].calculate_path(start)
+        print('N'+str(current_node.children[i].id)+':'+current_node.children[i].path, end=' ')
+        print(current_node.children[i].get_operator(start), end='')
+        if i != len(current_node.children) - 1:
+            print(', ', end='')
+    print('}')
 
     # OPEN (f value ascending)
-    # OPEN: {(N1:S-R 2 0 2), (N2:S-RD 1 0 1), (N3:S-D 2 0 2) }
+    open_list.sort(key=lambda node:node.f)  # sort OPEN according to f value
+    print('OPEN: {', end='')
+    for i in range(len(open_list)):
+        print('(', end='')
+        # calculate current node's path
+        open_list[i].path = open_list[i].calculate_path(start)
+        print('N' + str(open_list[i].id) + ':' + open_list[i].path, end=' ')
+        print(open_list[i].get_operator(start), end=' ')
+        print(str(open_list[i].g), str(open_list[i].h), str(open_list[i].f), end='')
+        print(')', end='')
+        if i != len(open_list) - 1:
+            print(', ', end='')
+    print('}')
 
     # CLOSED
-    # CLOSED: {(N0:S 1 0 0 0)}
+    print('CLOSED: {', end='')
+    order = 1
+    for i in range(len(close_list)):
+        print('(', end='')
+        print('N' + str(close_list[i].id) + ':' + close_list[i].get_operator(start), end=' ')
+        print(str(order), str(close_list[i].g), str(close_list[i].h), str(close_list[i].f), end='')
+        print(')', end='')
+        if i != len(close_list) - 1:
+            print(', ', end='')
+        order += 1
+    print('}')
+
+    print('\n')
 
 
 # A-star main function
@@ -305,14 +355,18 @@ def graphsearch(map, flag):
     open_list = list()
     close_list = list()
 
+    # define node id and expansion order
+    node_id = 0
+    expan_order = 1
+
     # 1. add start point into open list
     open_list.append(start)
+    start.id = node_id
+    node_id +=1
 
     # 2. loop until:
     # goal point is added into open list, or
     # goal search fails, and open list is empty
-    node_id = 0
-    expan_order = 1
     while goal not in open_list and len(open_list) != 0:
         # 2(a). traverse open list, find the node with minimum F to process it
         current_node = find_min_F_node(open_list)
@@ -326,12 +380,6 @@ def graphsearch(map, flag):
         # 2(b). move this node to close list
         open_list.remove(current_node)
         close_list.append(current_node)
-
-        # console output
-        if flag >= 1:
-            console_output(current_node, start, open_list, close_list, expan_order)
-            flag -= 1
-            expan_order += 1
 
         # 2(c). check current node's neighbor nodes
         neighbor_nodes = get_neighbor_nodes(all_nodes, current_node)
@@ -362,6 +410,12 @@ def graphsearch(map, flag):
                         neighbor_node.calculate_g()
                         neighbor_node.calculate_h(goal)
                         neighbor_node.calculate_f()
+
+        # console output
+        if flag >= 1:
+            console_output(current_node, start, open_list, close_list, expan_order)
+            flag -= 1
+            expan_order += 1
 
     # 3. save the path
     # move from goal to its parent, and parent's parent... reverse it and get the path
