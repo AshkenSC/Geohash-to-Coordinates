@@ -5,7 +5,6 @@ import re
 import platform
 
 
-
 ######## RUNNING THE CODE ####################################################
 
 #   You can run this code from terminal by executing the following command
@@ -17,9 +16,6 @@ import platform
 #   NOTE: THIS IS JUST ONE EXAMPLE INPUT DATA
 
 ###############################################################################
-
-
-
 
 
 ################## YOUR CODE GOES HERE ########################################
@@ -41,7 +37,7 @@ class Node:
 
     # calculate g value
     def calculate_g(self):
-        if self.parent.pos[0] - self.pos[0] + self.parent.pos[1] - self.pos[1] > 1:
+        if abs(self.parent.pos[0] - self.pos[0]) + abs(self.parent.pos[1] - self.pos[1]) > 1:
             # current node is on the diagonal of parent node
             self.g = self.parent.g + 1
         else:
@@ -51,7 +47,13 @@ class Node:
     # calculate h value
     # use Manhattan method to estimate
     def calculate_h(self, goal):
-        self.h = (abs(goal.pos[0] - self.pos[0]) + abs(goal.pos[1] - self.pos[1])) * 2
+        dx = abs(goal.pos[0] - self.pos[0])
+        dy = abs(goal.pos[1] - self.pos[1])
+        # self.h = (abs(goal.pos[0] - self.pos[0]) + abs(goal.pos[1] - self.pos[1])) * 2
+        # 对角线走比走两条边更短。因此可看作：
+        # 在min(dx, dy)边长的正方形上斜着走：代价abs(dx - dy)
+        # dx和dy更长者，其剩下的部分只能直走，代价为(max(dx, dy) - abs(dx - dy)) * 2
+        self.h = abs(dx - dy) + (max(dx, dy) - abs(dx - dy)) * 2
 
     # calculate f value:
     def calculate_f(self):
@@ -73,7 +75,7 @@ class Node:
         for node in path_nodes:
             action_list = update_action_list(start, action_list, node)
         return action_list
-    
+
     # calculate operator
     def get_operator(self, start):
         if self == start:
@@ -97,7 +99,6 @@ class Node:
             return 'LD'
 
 
-
 # read map from file and get map file object
 def read_from_file(file_name):
     # You can change the file reading function to suit the way
@@ -105,6 +106,7 @@ def read_from_file(file_name):
     file_handle = open(file_name, 'r')
     map = file_handle
     return map
+
 
 # load map from map file
 def load_map(input_file):
@@ -123,6 +125,7 @@ def load_map(input_file):
         i += 1
     return all_nodes, size
 
+
 # find the node with minimum F and process it
 def find_min_F_node(open_list):
     min_F_node = open_list[0]
@@ -130,9 +133,10 @@ def find_min_F_node(open_list):
         if node.f < min_F_node.f:
             min_F_node = node
         if node.f == min_F_node.f and open_list.index(node) > open_list.index(min_F_node):
-        # if f values of 2 nodes are equal, use a newer one (whose index is larger)
+            # if f values of 2 nodes are equal, use a newer one (whose index is larger)
             min_F_node = node
     return min_F_node
+
 
 # get a list of 8 neighbor nodes of current node
 def get_neighbor_nodes(all_nodes, node):
@@ -153,6 +157,7 @@ def get_neighbor_nodes(all_nodes, node):
                 neighbor_nodes.append(all_nodes[i][j])
     return neighbor_nodes
 
+
 # calculate new g of a node. If smaller, reset its parent node and g value.
 def calculate_new_g(node, new_parent):
     if new_parent.pos[0] - node.pos[0] + new_parent.pos[1] - node.pos[1] > 1:
@@ -162,6 +167,7 @@ def calculate_new_g(node, new_parent):
         # current node is not on the diagonal of parent node
         new_g = new_parent.g + 10
     return new_g
+
 
 # find start and goal in all nodes
 def find_start_and_goal(all_nodes):
@@ -175,12 +181,13 @@ def find_start_and_goal(all_nodes):
                 continue
     return start, goal
 
+
 # check if a neighbor node is reachable
 def is_reachable(current_node, neighbor_nodes, neighbor_node):
     if neighbor_node.status == 'X':
         return False
     elif current_node.pos[0] != neighbor_node.pos[0] and current_node.pos[1] != neighbor_node.pos[1]:
-    # consider neighbor nodes on diagonal
+        # consider neighbor nodes on diagonal
         for node in neighbor_nodes:
             if abs(neighbor_node.pos[0] - node.pos[0]) + abs(neighbor_node.pos[1] - node.pos[1]) == 1:
                 if node.status == 'X':
@@ -188,6 +195,7 @@ def is_reachable(current_node, neighbor_nodes, neighbor_node):
         return True
     else:
         return True
+
 
 # get the map indicating current position
 def get_current_step_map(all_nodes, current_node):
@@ -200,6 +208,7 @@ def get_current_step_map(all_nodes, current_node):
                 current_map += node.status
         current_map += '\n'
     return current_map
+
 
 # get current action list
 def update_action_list(start, action_list, node):
@@ -240,6 +249,7 @@ def update_action_list(start, action_list, node):
     elif direction == (1, -1):
         return action_list + '-LD'
 
+
 # get accumulated cost
 def update_cost(start, cost, node):
     if node == start:
@@ -249,6 +259,7 @@ def update_cost(start, cost, node):
         return cost + 1
     elif direction in {(1, 0), (0, 1), (-1, 0), (0, -1)}:
         return cost + 2
+
 
 # get final output string
 def get_result_string(start, goal, all_nodes):
@@ -270,8 +281,8 @@ def get_result_string(start, goal, all_nodes):
     path_nodes.reverse()
     path_nodes.insert(0, start)
 
-    solution = ''       # final solution string
-    action_list = ''    # list of actions string
+    solution = ''  # final solution string
+    action_list = ''  # list of actions string
     cost = 0
     for i in range(len(path_nodes)):
         # get the map indicating current position
@@ -281,38 +292,37 @@ def get_result_string(start, goal, all_nodes):
         # get accumulated cost
         cost = update_cost(start, cost, path_nodes[i])
 
-        solution += action_list + ' ' +str(cost) + '\n\n'
+        solution += action_list + ' ' + str(cost) + '\n\n'
 
     return solution
 
+
 # console output
 def console_output(current_node, start, open_list, close_list, expan_order):
-
     # build current node's path
     current_node.path = current_node.calculate_path(start)
     current_node.operator = current_node.get_operator(start)
 
     # node identifier, expansion order, g, h, f
-    print('N'+str(current_node.id)+':'+current_node.path, end=' ')
+    print('N' + str(current_node.id) + ':' + current_node.path, end=' ')
     if current_node == start:
         print(str(expan_order), str(current_node.g), str(current_node.h), str(current_node.f))
     else:
         print(current_node.operator, str(expan_order), str(current_node.g), str(current_node.h), str(current_node.f))
-
 
     # children
     print('Children: {', end='')
     for i in range(len(current_node.children)):
         # calculate current children's path
         current_node.children[i].path = current_node.children[i].calculate_path(start)
-        print('N'+str(current_node.children[i].id)+':'+current_node.children[i].path, end=' ')
+        print('N' + str(current_node.children[i].id) + ':' + current_node.children[i].path, end=' ')
         print(current_node.children[i].get_operator(start), end='')
         if i != len(current_node.children) - 1:
             print(', ', end='')
     print('}')
 
     # OPEN (f value ascending)
-    open_list.sort(key=lambda node:node.f)  # sort OPEN according to f value
+    open_list.sort(key=lambda node: node.f)  # sort OPEN according to f value
     print('OPEN: {', end='')
     for i in range(len(open_list)):
         print('(', end='')
@@ -362,7 +372,7 @@ def graphsearch(map, flag):
     # 1. add start point into open list
     open_list.append(start)
     start.id = node_id
-    node_id +=1
+    node_id += 1
 
     # 2. loop until:
     # goal point is added into open list, or
@@ -423,6 +433,7 @@ def graphsearch(map, flag):
 
     return solution
 
+
 ###############################################################################
 
 ########### DO NOT CHANGE ANYTHING BELOW ######################################
@@ -430,22 +441,16 @@ def graphsearch(map, flag):
 ###############################################################################
 
 
-
 def write_to_file(file_name, solution):
-
     file_handle = open(file_name, 'w')
 
     file_handle.write(solution)
 
 
-
 def main():
-
     # create a parser object
 
     parser = ap.ArgumentParser()
-
-
 
     # specify what arguments will be coming from the terminal/commandline
 
@@ -457,39 +462,27 @@ def main():
 
     # parser.add_argument("procedure_name", help="specifies the type of algorithm to be applied, can be D, A", type=str)
 
-
-
-
-
     # get all the arguments
 
     arguments = parser.parse_args()
 
+    ##############################################################################
 
+    # these print statements are here to check if the arguments are correct.
 
-##############################################################################
+    #    print("The input_file_name is " + arguments.input_file_name)
 
-# these print statements are here to check if the arguments are correct.
+    #    print("The output_file_name is " + arguments.output_file_name)
 
-#    print("The input_file_name is " + arguments.input_file_name)
+    #    print("The flag is " + str(arguments.flag))
 
-#    print("The output_file_name is " + arguments.output_file_name)
+    #    print("The procedure_name is " + arguments.procedure_name)
 
-#    print("The flag is " + str(arguments.flag))
-
-#    print("The procedure_name is " + arguments.procedure_name)
-
-##############################################################################
-
-
+    ##############################################################################
 
     # Extract the required arguments
 
-
-
     operating_system = platform.system()
-
-
 
     if operating_system == "Windows":
 
@@ -498,19 +491,15 @@ def main():
         input_tokens = input_file_name.split("\\")
 
         if not re.match(r"(INPUT\\input)(\d)(.txt)", input_file_name):
-
             print("Error: input path should be of the format INPUT\input#.txt")
 
             return -1
-
-
 
         output_file_name = arguments.output_file_name
 
         output_tokens = output_file_name.split("\\")
 
         if not re.match(r"(OUTPUT\\output)(\d)(.txt)", output_file_name):
-
             print("Error: output path should be of the format OUTPUT\output#.txt")
 
             return -1
@@ -522,36 +511,26 @@ def main():
         input_tokens = input_file_name.split("/")
 
         if not re.match(r"(INPUT/input)(\d)(.txt)", input_file_name):
-
             print("Error: input path should be of the format INPUT/input#.txt")
 
             return -1
-
-
 
         output_file_name = arguments.output_file_name
 
         output_tokens = output_file_name.split("/")
 
         if not re.match(r"(OUTPUT/output)(\d)(.txt)", output_file_name):
-
             print("Error: output path should be of the format OUTPUT/output#.txt")
 
             return -1
-
-
 
     flag = arguments.flag
 
     # procedure_name = arguments.procedure_name
 
-
-
-
-
     try:
 
-        map = read_from_file(input_file_name) # get the map
+        map = read_from_file(input_file_name)  # get the map
 
     except FileNotFoundError:
 
@@ -561,27 +540,18 @@ def main():
 
     # print(map)
 
-    
-
-    solution_string = "" # contains solution
-
-
+    solution_string = ""  # contains solution
 
     solution_string = graphsearch(map, flag)
 
     write_flag = 1
 
-    
-
     # call function write to file only in case we have a solution
 
     if write_flag == 1:
-
         write_to_file(output_file_name, solution_string)
 
 
-
 if __name__ == "__main__":
-
     main()
 
